@@ -1,0 +1,13 @@
+pt_timepoint,total_cells,running_total
+cll5_baseline,3731,3731
+cll5_btk_clone,6769,10500
+cll5_relapse,6349,16849
+cll6_baseline,10794,27643
+cll6_btk_clone,3528,31171
+cll6_relapse,2429,33600
+cll7_baseline,3868,37468
+cll7_btk_clone,2693,40161
+cll7_relapse,2907,43068
+cll8_baseline,3800,46868
+cll8_btk_clone,2120,48988
+cll8_relapse,3385,52373
