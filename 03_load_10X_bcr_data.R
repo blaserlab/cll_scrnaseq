@@ -82,4 +82,4 @@ summarized_sequencing_metrics_bcr <- tibble(pipestance_path = bcr_pipestance_pat
   write_csv("data_out/summarized_sequencing_metrics_bcr.csv")
 summarized_sequencing_metrics_bcr
 
-#save.image.pigz("cll_scrnaseq.RData",n.cores = 39)
+save.image.pigz("cll_scrnaseq_current.RData",n.cores = 39)
