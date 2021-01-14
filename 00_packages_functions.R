@@ -24,6 +24,7 @@ library("glue")
 library("broom")
 library("Matrix.utils")
 library("DESeq2")
+library("readxl")
 theme_set(theme_cowplot(font_size = 11))
 filter <- dplyr::filter
 mutate <- dplyr::mutate

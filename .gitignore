@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # working files
 working_files/*
+
+# local data
+local_data/*
