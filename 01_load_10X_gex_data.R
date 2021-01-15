@@ -11,7 +11,7 @@ analysis_configs <- read_excel("~/network/X/Labs/Blaser/single_cell/cll_project/
   
 analysis_configs_gex <- analysis_configs %>% filter(lib_type == "gex")
 
-gex_pipestance_list <-
+cds_list <-
   pmap(
     .l = list(
       patient = analysis_configs_gex$patient,
@@ -37,13 +37,13 @@ gex_pipestance_list <-
     }
   )
 
-names(gex_pipestance_list) <- analysis_configs_gex$pipestance_names
+names(cds_list) <- analysis_configs_gex$pipestance_names
 
 summarized_sequencing_metrics <-
   tibble(pipestance_path = analysis_configs_gex$directory) %>%
   mutate(metrics_summary_path = paste0(pipestance_path, "/outs/metrics_summary.csv")) %>%
-  mutate(cds_dim_cells = unname(sapply(X = gex_pipestance_list, FUN = dim)[2, ])) %>%
-  mutate(cds_name = names(sapply(X = gex_pipestance_list, FUN = dim)[2, ])) %>%
+  mutate(cds_dim_cells = unname(sapply(X = cds_list, FUN = dim)[2, ])) %>%
+  mutate(cds_name = names(sapply(X = cds_list, FUN = dim)[2, ])) %>%
   left_join(.,
             bind_rows(lapply(
               X = .$metrics_summary_path, FUN = read_csv

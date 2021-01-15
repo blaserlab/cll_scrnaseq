@@ -1,10 +1,7 @@
-# set working directory
-setwd("/workspace/workspace_pipelines/cll_scrnaseq/")
-
+setwd(
+  "/workspace/workspace_pipelines/cll_scrnaseq"
+)
 #libraries
-library("monocle3")
-library("tidyverse")
-library("cowplot")
 library("fastSave")
 library("ggrepel")
 library("htmltools")
@@ -14,6 +11,12 @@ library("ggplotify")
 library("RColorBrewer")
 library("assertthat")
 library("data.table")
+library("monocle3")
+library("tidyverse")
+library("cowplot")
+library("ggsci")
+library("scales")
+library("patchwork")
 library("scater")
 library("reticulate")
 library("DoubletFinder")#remotes::install_github('chris-mcginnis-ucsf/DoubletFinder')
@@ -23,52 +26,103 @@ library("rhdf5")
 library("glue")
 library("broom")
 library("Matrix.utils")
-library("DESeq2")
-library("readxl")
+#library("DESeq2")
+library("Seurat")
+library("SeuratDisk")
+library("patchwork")
+library("SeuratData")
+library("circlize")
+library("ComplexHeatmap")
+library("rstatix")
+library("WRS2")
+library("Cairo")
+library("tidyselect")
+library("simplifyEnrichment")
+library("topGO")
+library("Rgraphviz")
+library("GOsummaries")
+library("gprofiler2")
+library("magick")
+library("prodlim")
+library("ViSEAGO")
+library("rrvgo")
+library("biclust")
 theme_set(theme_cowplot(font_size = 11))
+# fix file path header
+fix_file_path <- function(x) {
+  x <- str_replace_all(x,"\\\\","/")
+  x <- str_replace(x,"X:/","~/network/X/")
+}
+
+#unmask important functions####
 filter <- dplyr::filter
 mutate <- dplyr::mutate
-arrange  <- dplyr::arrange
-rename  <- dplyr::rename
-# this is a change made remotely
-# fix file path header
-renv<-Sys.getenv()
-renv_1<-str_sub(renv[names(renv)=='HOME'][[1]],1,1)
-if (renv_1=="/") home_header<-"~/network/X/"
-if (renv_1=="C") home_header<-"X:/"
-
-#custom operators
+group_by <- dplyr::group_by
+select <- dplyr::select
+#custom operators####
 `%notin%` <- Negate(`%in%`)
 
-#helper functions
+#helper functions####
+
+rank_in_group <- function(data) {
+  
+  data %>%
+    dplyr::mutate(constcol = 1) %>%
+    dplyr::mutate(rank = cumsum(.data$constcol)) %>%
+    dplyr::select(-.data$constcol)
+  
+}
+
+tbl_to_matrix <- function(data) {
+  data <- data %>%
+    as.data.frame()
+  rownames(data) <- data[,1]
+  return(as.matrix(data[,-1]))
+}
+
+
 se <- function(x) sqrt(var(x, na.rm=TRUE)/length(x))
 
-data_summary<-function(x){
-  m<-median(x)
-  ymin<-m-se(x)
-  ymax<-m+se(x)
-  return(c(y=m, ymin=ymin,ymax=ymax))
+data_summary <- function(x) {
+  m <- median(x)
+  ymin <- m - se(x)
+  ymax <- m + se(x)
+  return(c(y = m, ymin = ymin, ymax = ymax))
 }
 
-data_summary1<-function(x){
-  m<-median(x)
-  ymin<-m-(IQR(x)/2)
-  ymax<-m+(IQR(x)/2)
-  return(c(y=m, ymin=ymin,ymax=ymax))
+data_summary1 <- function(x) {
+  m <- median(x)
+  ymin <- m - (IQR(x) / 2)
+  ymax <- m + (IQR(x) / 2)
+  return(c(y = m, ymin = ymin, ymax = ymax))
 }
 
-data_summary2<-function(x){
-  m<-mean(x)
-  ymin<-m-se(x)
-  ymax<-m+se(x)
-  return(c(y=m, ymin=ymin,ymax=ymax))
+data_summary2 <- function(x) {
+  m <- mean(x)
+  ymin <- m - se(x)
+  ymax <- m + se(x)
+  return(c(y = m, ymin = ymin, ymax = ymax))
 }
 
-dir_make <- function(x) {
-  if(!dir.exists(x)){
-    dir.create(x)
+data_summary3 <- function(x) {
+  m <- median(x)
+  ymin <- m - mad(x)
+  ymax <- m + mad(x)
+  return(c(y = m, ymin = ymin, ymax = ymax))
+}
+
+# diversity index functions
+shannon_func<-function(x){
+  prop<-x/sum(x)
+  shannon_entropy<--1*sum(prop*log2(prop))
+  return(shannon_entropy)
   }
+
+# selector function for topGO
+selector <- function(theScore) {
+  return (theScore == 1)
 }
+    
 
 # standard 2color jitter geom
 standard_2color_jitter <- function(data, mapping) {
@@ -77,10 +131,9 @@ standard_2color_jitter <- function(data, mapping) {
       shape = 21,
       width = 0.2,
       size = 1,
-      stroke = 0.25
-    ) +
-    scale_fill_manual(values = alpha(c("#DC0000", "#3C5488"), 0.4)) +
-    scale_color_manual(values = c("#DC0000", "#3C5488"))
+      stroke = 0.25,
+      alpha = 0.4
+    )
 }
 
 # blank plot to fill in plot_grid
@@ -95,9 +148,174 @@ blank_plot<-ggplot(data = empty_data, aes(x = horiz, y = vert))+
         axis.line = element_line(color = "transparent"),
         axis.text = element_text(color = "transparent"))
 
+# print stat report to text file
+
+print_full_stats <- function(data, class_var, class1, class2, value_var, out = NULL) {
+	if (!is.null(out)) {
+	  sink(out) 
+	}
+	print(data %>%
+	      group_by(!!sym(class_var)) %>%
+	      summarise(n = n(),
+			mean = mean(!!sym(value_var)),
+			sd = sd(!!sym(value_var)),
+			se = se(!!sym(value_var)),
+			median = median(!!sym(value_var)),
+			IQR = IQR(!!sym(value_var)),
+			shapiro_p = shapiro.test(!!sym(value_var))[[2]]))
+	class1_data <- data %>%
+		filter(!!sym(class_var) == class1) %>%
+		pull(!!sym(value_var))
+	class2_data <- data %>%
+		filter(!!sym(class_var) == class2) %>%
+		pull(!!sym(value_var))
+	cat("_________________________________")
+	cat("\n\n")
+	cat(paste0("Class 1 is ",class1," and Class 2 is ",class2,"\n"))
+	cat("_________________________________")
+	cat("\n")
+	print(shapiro.test(class1_data))
+	cat("_________________________________")
+	cat("\n")
+	print(shapiro.test(class2_data))
+	cat("_________________________________")
+	cat("\n")
+	print(t.test(class1_data, class2_data, alternative = "two.sided", var.equal = T))
+	cat("_________________________________")
+	cat("\n")
+	print(t.test(class1_data, class2_data, alternative = "two.sided", var.equal = F))
+	cat("_________________________________")
+	cat("\n")
+	print(wilcox.test(class1_data, class2_data))
+	if (!is.null(out)){
+	  sink()
+	}
+}
 
 
 # custom scrnaseq functions
+load_cellranger_multi_counts <-
+  function (pipestance_path = NULL,
+            genome = NULL,
+            barcode_filtered = TRUE,
+            umi_cutoff = 100,
+            allowed_data_types = c("Gene Expression","Antibody Capture"))
+  {
+    if (!dir.exists(pipestance_path))
+      stop(
+        "Could not find the pipestance path: '",
+        pipestance_path,
+        "'.\n         Please double-check if the directory exists.\n"
+      )
+    od = file.path(pipestance_path, "outs/count")
+    if (!dir.exists(od))
+      stop(
+        "Could not find the pipestance output directory: '",
+        file.path(pipestance_path, "outs"),
+        "'. Please double-check if the directory exists.\n"
+      )
+    v3p = file.path(od, "filtered_feature_bc_matrix")
+    v2p = file.path(od, "filtered_gene_bc_matrices")
+    v3d = dir.exists(v3p)
+    if (barcode_filtered) {
+      matrix_dir = ifelse(v3d, v3p, v2p)
+    }
+    else {
+      matrix_dir = ifelse(
+        v3d,
+        file.path(od, "raw_feature_bc_matrix"),
+        file.path(od, "raw_gene_bc_matrices")
+      )
+    }
+    if (!dir.exists(matrix_dir))
+      stop("Could not find directory: ", matrix_dir)
+    if (v3d) {
+      features.loc <- file.path(matrix_dir, "features.tsv.gz")
+      barcode.loc <- file.path(matrix_dir, "barcodes.tsv.gz")
+      matrix.loc <- file.path(matrix_dir, "matrix.mtx.gz")
+      summary.loc <- file.path(od, "metrics_summary_csv.csv")
+    }
+    else {
+      genome = get_genome_in_matrix_path(matrix_dir, genome)
+      barcode.loc <- file.path(matrix_dir, genome, "barcodes.tsv")
+      features.loc <- file.path(matrix_dir, genome, "genes.tsv")
+      matrix.loc <- file.path(matrix_dir, genome, "matrix.mtx")
+      summary.loc <- file.path(od, "metrics_summary.csv")
+    }
+    if (!file.exists(barcode.loc)) {
+      stop("Barcode file missing")
+    }
+    if (!file.exists(features.loc)) {
+      stop("Gene name or features file missing")
+    }
+    if (!file.exists(matrix.loc)) {
+      stop("Expression matrix file missing")
+    }
+    data <- Matrix::readMM(matrix.loc)
+    feature.names = utils::read.delim(features.loc,
+                                      header = FALSE,
+                                      stringsAsFactors = FALSE)
+    feature.names$V1 = make.unique(feature.names$V1)
+    if (dim(data)[1] != length(feature.names[, 1])) {
+      stop(sprintf(
+        paste(
+          "Mismatch dimension between gene file: \n\t %s\n and",
+          "matrix file: \n\t %s\n"
+        ),
+        features.loc,
+        matrix.loc
+      ))
+    }
+    if (v3d) {
+      data_types = factor(feature.names$V3)
+      allowed = data_types %in% (allowed_data_types)
+      if (!is.null(genome)) {
+        gfilter = grepl(genome, feature.names$V1)
+        if (any(gfilter)) {
+          allowed = allowed & grepl(genome, feature.names$V1)
+        }
+        else {
+          message(
+            paste(
+              "Data does not appear to be from a multi-genome sample,",
+              "simply returning all gene feature data without",
+              "filtering by genome."
+            )
+          )
+        }
+      }
+      data = data[allowed,]
+      feature.names = feature.names[allowed, 1:2]
+    }
+    colnames(feature.names) = c("id", "gene_short_name")
+    rownames(data) = feature.names[, "id"]
+    rownames(feature.names) = feature.names[, "id"]
+    barcodes <-
+      utils::read.delim(barcode.loc,
+                        stringsAsFactors = FALSE,
+                        header = FALSE)
+    if (dim(data)[2] != length(barcodes[, 1])) {
+      stop(sprintf(
+        paste(
+          "Mismatch dimension between barcode file: \n\t %s\n",
+          "and matrix file: \n\t %s\n"
+        ),
+        barcode.loc,
+        matrix.loc
+      ))
+    }
+    barcodes$V1 = make.unique(barcodes$V1)
+    colnames(data) = barcodes[, 1]
+    pd = data.frame(barcode = barcodes[, 1], row.names = barcodes[,
+                                                                  1])
+    data <- data[, Matrix::colSums(data) > umi_cutoff]
+    pd <- pd[colnames(data), , drop = FALSE]
+    gbm <-
+      new_cell_data_set(data, cell_metadata = pd, gene_metadata = feature.names)
+    return(gbm)
+  }
+
+
 
 plot_cells_alt <-
   function (cds,
@@ -106,17 +324,10 @@ plot_cells_alt <-
             w,
             cell_size = 1,
             alpha = 1 ,
-            outfile = NULL,
             ncol = NULL,
-            plot_title = NULL,
-            plot_type = "pdf",
-            i =1) {
+            plot_title = NULL
+            ) {
     
-    if (i>1) {
-      outfile<-paste0("plots_out/",names(marker_gene_list)[i],".",plot_type)
-      gene_or_genes<-gene_or_genes[[i]]
-      plot_title<-plot_title[[i]]
-    }
     data <- plot_cells(cds = cds, genes = gene_or_genes)[["data"]]
     data$gene_short_name <-
       factor(data$gene_short_name, levels = gene_or_genes)
@@ -152,14 +363,6 @@ plot_cells_alt <-
       facet_wrap( ~ gene_short_name, ncol = ncol) +
       theme(strip.background = element_blank())+
       theme(plot.title = element_text(hjust = 0.5))
-    if (!is.null(outfile)) {
-      save_plot(
-        plot = p,
-        filename = outfile,
-        base_height = h,
-        base_width = w
-      )
-    }
     return(p)
   }
 
@@ -182,144 +385,124 @@ add_cds_factor_columns<-function(cds, columns_to_add){
   return(cds)
 }
 
-custom_variable_plot <- function(cds,
-                                 i = NULL,
-                                 var,
-                                 value_to_highlight = NULL,
-                                 foreground_alpha = 1,
-                                 legend_pos = "right",
-                                 cell_size = 0.5,
-                                 legend_title = NULL,
-                                 plot_title = NULL,
-                                 outfile = NULL,
-                                 h = NULL,
-                                 w = NULL,
-                                 palette = NULL,
-                                 legend_ncol = 1) {
-  if (!is.null(i)) {
-    value_to_highlight <- value_to_highlight[[i]]
-    plot_title <- plot_title[[i]]
-    outfile <- paste0("plots_out/", outfile[[i]], ".pdf")
-  }
+
+custom_variable_plot<-function(cds,
+                               var, 
+                               value_to_highlight = NULL, 
+                               foreground_alpha = 1, 
+                               legend_pos = "right", 
+                               cell_size = 0.5, 
+                               legend_title = NULL,
+                               plot_title = NULL,
+                               palette = NULL,
+                               ref_dim_x = NULL,
+                               ref_dim_y = NULL,
+                               overwrite_labels = FALSE,
+                               group_label_size = 3) {
+  data<-plot_cells(cds)[["data"]]
+  data_long<-data %>% pivot_longer(cols = (!!sym(var)), names_to = "var")
+  dim_x <- ifelse(is.null(ref_dim_x),"data_dim_1",ref_dim_x)
+  dim_y <- ifelse(is.null(ref_dim_y),"data_dim_2",ref_dim_y)
   
-  data <- plot_cells(cds)[["data"]]
-  data_long <-
-    data %>% pivot_longer(cols = matches(var), names_to = "var")
-  plot <- ggplot()
-  if (!is.null(value_to_highlight)) {
-    data_background <-
-      data_long %>% filter(value %notin% value_to_highlight)
-    data_long <- data_long %>% filter(value %in% value_to_highlight)
-    plot <- plot +
-      geom_point(
-        data = data_background,
-        aes(x = data_dim_1, y = data_dim_2),
-        stroke = 0.25,
-        shape = 1,
-        size = cell_size,
-        color = "grey80"
-      )
-  }
-  plot <- plot +
-    geom_point(
-      data = data_long,
-      aes(
-        x = data_dim_1,
-        y = data_dim_2,
-        fill = value,
-        color = value
-      ),
-      stroke = 0.25,
-      shape = 21,
-      alpha = foreground_alpha,
-      size = cell_size
+  # generate text data frame for variable labels if you are going to use them
+  text_df <- data_long %>% group_by(value)
+  median_coord_df <-
+    data_long %>% 
+    group_by(value) %>% 
+    summarise(
+      fraction_of_group = n(),
+      text_x = median(!!sym(dim_x)),
+      text_y = median(!!sym(dim_y))
     )
-  if (class(data_long$value) == "numeric") {
-    plot <- plot + scale_fill_viridis_c(aesthetics = c("color", "fill"))
-  } else if (!is.null(palette)) {
-    if (palette[1] == "viridis") {
-      plot <- plot +
-        scale_fill_viridis_d(begin = 0.1, end = 0.9) +
-        scale_color_viridis_d(begin = 0.1,
-                              end = 0.9,
-                              guide = F)
-    } else if (palette[1] == "rcolorbrewer") {
-      colourCount = length(unique(data_long$value))
-      getPalette = colorRampPalette(brewer.pal(12, "Paired"))
-      plot <- plot +
-        scale_color_manual(values = getPalette(colourCount), guide = F) +
-        scale_fill_manual(values = getPalette(colourCount))
-    }  else if (length(palette)>1) {
-      plot <- plot +
-        scale_color_manual(values = palette, guide = F) +
-        scale_fill_manual(values = palette)
-    }
-    
+  text_df <- left_join(text_df, median_coord_df) %>%
+    mutate(label = value)
+  text_df <-
+    text_df %>% group_by(label,text_x,text_y) %>% summarise()
+  
+  # make the main plot
+  plot<-ggplot()
+  if(!is.null(value_to_highlight)){
+    data_background<-data_long %>% filter(value %notin% value_to_highlight)
+    data_long<-data_long %>% filter(value %in% value_to_highlight)
+    plot<-plot+
+      geom_point(data = data_background, 
+                 aes(x = !!sym(dim_x),
+                     y = !!sym(dim_y)), 
+                 stroke = 0.25, 
+                 shape = 1, 
+                 size = cell_size, 
+                 color = "grey80")
   }
-  else {
-    plot <- plot +
-      scale_color_discrete(guide = F) +
+  plot<-plot+
+    geom_point(data = data_long, 
+               aes(x = !!sym(dim_x), 
+                   y = !!sym(dim_y),
+                   fill = value, 
+                   color = value
+                   ), 
+               stroke = 0.25, 
+               shape = 21, 
+               alpha = foreground_alpha, 
+               size = cell_size)
+  if (class(data_long$value)=="numeric") {
+    plot<-plot+
+      scale_fill_viridis_c(guide = "colorbar",na.value = "transparent")+
+      scale_color_viridis_c(guide = F, na.value = "grey80")
+  } else if (length(palette) == 1 && palette == "viridis") {
+    plot<-plot+
+      scale_fill_viridis_d(begin = 0.1,end = 0.9)+
+      scale_color_viridis_d(begin = 0.1,end = 0.9, guide = F)
+  } else if (length(palette) == 1 && palette == "rcolorbrewer") {
+    plot<-plot+scale_color_brewer(palette = "Paired",guide = F)+
+      scale_fill_brewer(palette = "Paired")
+  } else if (!is.null(palette)) {
+    plot<-plot+scale_color_manual(values = palette, guide = F)+
+      scale_fill_manual(values = palette)
+  } else {
+    plot<-plot+scale_color_discrete(guide = F)+
       scale_fill_discrete()
   }
+  if(class(data_long$value)!= "numeric") {
+    plot<-plot+guides(fill = guide_legend(override.aes = list(size = 2, alpha = 1, color = "transparent")))
+  }
+  plot<-plot+labs(x = ifelse(is.null(ref_dim_x),"UMAP 1",ref_dim_x), 
+                  y = ifelse(is.null(ref_dim_y),"UMAP 2", ref_dim_y), 
+                  title = plot_title, 
+                  fill = legend_title) + 
+    theme(plot.title = element_text(hjust = 0.5))
+  plot<-plot + 
+    theme(legend.position = legend_pos)#+coord_fixed()
   
+  #option to overwrite labels
+  if (overwrite_labels == T) {
+    plot <- plot +
+      theme(legend.position = "none") +
+      geom_text_repel(
+        data = text_df,
+        mapping = aes_string(x = "text_x", y = "text_y", label = "label"),
+        size = group_label_size, 
+        min.segment.length = 1)
+  }
   
-  plot <-
-    plot + guides(fill = guide_legend(
-      ncol = legend_ncol,
-      override.aes = list(
-        size = 2,
-        alpha = 1,
-        color = "transparent"
-      )
-    ))
-  plot <-
-    plot + labs(
-      x = "UMAP 1",
-      y = "UMAP 2",
-      title = plot_title,
-      fill = legend_title
-    ) + theme(plot.title = element_text(hjust = 0.5))
-  plot <- plot + theme(legend.position = legend_pos)#+coord_fixed()
-  if (is.null(outfile))
-    return(plot)
-  else
-    save_plot(
-      plot = plot,
-      filename = outfile,
-      base_height = h,
-      base_width = w
-    )
   return(plot)
-  
+ # return(data_long) 
 }
 
 
-
-
 custom_cp_plot <- function(cds,
-                           i = NULL,
                            var = NULL,
                            alpha = 1,
-                           cp = c("cluster", "partition"),
+                           cp ,
                            overwrite_labels = T,
                            legend_pos = "none",
                            cell_size = 0.5,
                            legend_title = NULL,
                            plot_title = NULL,
-                           outfile = NULL,
-                           h = NULL,
-                           w = NULL,
                            group_label_size = 3,
                            value_to_highlight = NULL,
-                           plot_type = "pdf",
                            alt_color_var = NULL,
                            facet_by = NULL,
                            palette = NULL) {
-  if (!is.null(i)){
-    value_to_highlight<-value_to_highlight[[i]]
-    plot_title<-plot_title[[i]]
-    outfile<-outfile[[i]]
-  }
     #extract the data from the input cds
   data <- plot_cells(cds)[["data"]]
   #convert to long format
@@ -334,12 +517,8 @@ custom_cp_plot <- function(cds,
       text_x = median(data_dim_1),
       text_y = median(data_dim_2)
     )
-  text_df <- left_join(text_df, median_coord_df)
-  if (cp == "cluster")
-    text_df$label <-
-    text_df$cluster_assignment
-  else
-    text_df$label <- text_df$partition_assignment
+  text_df <- left_join(text_df, median_coord_df) %>%
+    mutate(label = value)
   text_df <-
     text_df %>% group_by(label) %>% summarise(text_x = dplyr::first(text_x),
                                               text_y = dplyr::first(text_y))
@@ -360,7 +539,7 @@ custom_cp_plot <- function(cds,
                  size = cell_size,
                  color = "grey80")
   }
-  
+
   # make the main colored plot from data_long
   if (!is.null(alt_color_var)){
     plot <- plot +
@@ -390,7 +569,7 @@ custom_cp_plot <- function(cds,
         alpha = alpha,
         size = cell_size)
   }
-  
+
   plot<-plot+
     scale_color_discrete(guide = F) +
     scale_fill_discrete()+
@@ -434,22 +613,17 @@ custom_cp_plot <- function(cds,
       scale_color_manual(values = getPalette(colourCount), guide = F)+
       scale_fill_manual(values = getPalette(colourCount))
   }
-  
-  if (length(palette)>1) {
+
+  if (!is.null(palette) && length(palette)>1) {
     plot <- plot +
       scale_color_manual(values = palette, guide = F) +
       scale_fill_manual(values = palette)
   }
-  
-  # option to save plot
-  if (is.null(outfile)) {return(plot)} else {
-    save_plot(
-      plot = plot,
-      filename = outfile,
-      base_height = h,
-      base_width = w)
-    return(plot)}
+
+    return(plot)
 }
+
+
 
 
 custom_violin_plot <-
@@ -470,8 +644,8 @@ custom_violin_plot <-
            #sig_lab_y = 1,
            #yplotmax
   ) {
-    # my_comparisons <-
-    #   comparison_list#(list(c(comparator1,comparator2),c(comparator1,comparator3)...))
+    my_comparisons <-
+      comparison_list#(list(c(comparator1,comparator2),c(comparator1,comparator3)...))
     data_to_plot <-
       plot_genes_violin(cds_subset = cds[rowData(cds)$gene_short_name %in% genes_to_plot,], group_cells_by = variable)[["data"]]
     p1 <-
@@ -493,7 +667,7 @@ custom_violin_plot <-
       p1 <-
         p1 + geom_jitter(
           shape = 16,
-          size = 1,
+          size = 0.05,
           color = "black",
           alpha = 0.1,
           width = 0.2
@@ -687,6 +861,184 @@ plot_genes_in_pseudotime_alt<-function (cds_subset, min_expr = NULL, cell_size =
 }
 
 
+# qc function ####
+qc_func <- function(cds, genome = c("human", "mouse", "zfish")) {
+  if (genome == "human") {
+    mito_pattern <-"^MT-"
+  }
+  if (genome == "mouse") {
+    mito_pattern <- "^mt-"
+  }
+  if (genome == "zfish") {
+    mito_pattern <- "^mt-"
+  }
+  cds <-
+    scater::addPerCellQC(cds,subsets=list(Mito=grep(mito_pattern, rowData(cds)$gene_short_name)))
+  cds_tbl <- as_tibble(colData(cds)) %>%
+    mutate(
+      qc.detected = isOutlier(
+        detected,
+        log = TRUE,
+        type = "lower",
+        nmads = 2
+      ),
+      qc.mito = isOutlier(
+        subsets_Mito_percent,
+        type = "higher",
+        nmads = 2
+      ),
+      qc.any = qc.detected | qc.mito,
+      pre_post = "pre"
+    )
+  qc_detected_thresh <-
+    attr(
+      isOutlier(
+        cds_tbl$detected,
+        log = TRUE,
+        type = "lower",
+        nmads = 2
+      ),
+      "thresholds"
+    )
+  qc_mito_thresh <-
+    attr(isOutlier(cds_tbl$subsets_Mito_percent, type = "higher", nmads = 2),
+         "thresholds")
+  cds_tbl_filtered_any <-
+    cds_tbl %>% filter(qc.any == FALSE) %>% mutate(pre_post = "post")
+  cds_tbl_filtered_detected <-
+    cds_tbl %>% filter(qc.detected == FALSE) %>% mutate(pre_post = "post")
+  cds_tbl_filtered_mito <-
+    cds_tbl %>% filter(qc.mito == FALSE) %>% mutate(pre_post = "post")
+  cds_to_plot_any <- bind_rows(cds_tbl, cds_tbl_filtered_any)
+  cds_to_plot_detected <-
+    bind_rows(cds_tbl, cds_tbl_filtered_detected)
+  cds_to_plot_mito <- bind_rows(cds_tbl, cds_tbl_filtered_mito)
+  plot_any <-
+    ggplot(cds_to_plot_any, aes(x = fct_rev(pre_post), y = log10(detected))) +
+    geom_violin() + 
+    labs(y = "log10(detected features)", title = "qc.any", x = "thresholding") +
+    theme(plot.title = element_text(hjust = 0.5))
+  plot_mito <-
+    ggplot(cds_to_plot_mito, aes(x = fct_rev(pre_post), y = subsets_Mito_percent)) +
+    geom_violin() +
+    geom_hline(yintercept = qc_mito_thresh[[2]]) +
+    scale_y_continuous(breaks = c(qc_mito_thresh[[2]], seq(
+      0, max(cds_to_plot_mito$subsets_Mito_percent), by = 20
+    ))) +
+    labs(y = "Percent Mitochondrial", title = "qc.mito", x = "thresholding") +
+    theme(plot.title = element_text(hjust = 0.5))
+  plot_detected <-
+    ggplot(cds_to_plot_detected, aes(
+      x = fct_rev(pre_post),
+      y = log10(detected)
+    )) +
+    geom_violin() +
+    geom_hline(yintercept = log10(qc_detected_thresh[[1]])) +
+    scale_y_continuous(breaks = c(log10(qc_detected_thresh[[1]]), seq(0, max(
+      log10(cds_to_plot_detected$detected)
+    ), by = 1))) +
+    labs(y = "Log10(detected features)", title = "qc.detected", x = "thresholding") +
+    theme(plot.title = element_text(hjust = 0.5))
+  cds_return <- cds_tbl %>% select(barcode, qc.any)
+  return_list <-
+    list(cds_return,
+         plot_any,
+         plot_mito,
+         plot_detected,
+         qc_detected_thresh,
+         qc_mito_thresh)
+  return(return_list)
+}
+
+# run doubletfinder #### 
+find_homotypic_doublets <-
+  function(cds,
+           doublet_prediction,
+           qc_table
+           ) {
+    # system(paste0("gunzip -k ", directory, "/*"))
+    keepers <- qc_table %>% filter(qc.any == FALSE) %>% pull(barcode)
+    #seu_data <- Read10X(data.dir = directory)
+    seu_object <- CreateSeuratObject(exprs(cds))
+    seu_object@meta.data$barcode <- rownames(seu_object@meta.data)
+    seu_object <- subset(seu_object, subset = barcode %in% keepers)
+    seu_object <- NormalizeData(seu_object)
+    seu_object <-
+      FindVariableFeatures(seu_object,
+                           selection.method = "vst",
+                           nfeatures = 2000)
+    all.genes  <- rownames(seu_object)
+    seu_object <- ScaleData(seu_object, features = all.genes)
+    seu_object <-
+      RunPCA(seu_object, features = VariableFeatures(object = seu_object))
+    seu_object <- FindNeighbors(seu_object)
+    seu_object <- FindClusters(seu_object)
+    seu_object <- RunUMAP(seu_object, dims = 1:10)
+    
+    ## pK Identification (no ground-truth) ---------------------------------------------------------------------------------------
+    sweep.res.list <-
+      paramSweep_v3(seu_object, PCs = 1:10, sct = FALSE)
+    sweep.stats <- summarizeSweep(sweep.res.list, GT = FALSE)
+    bcmvn <- find.pK(sweep.stats)
+    
+    ## Homotypic Doublet Proportion Estimate -------------------------------------------------------------------------------------
+    annotations <- seu_object@meta.data$seurat_clusters
+    homotypic.prop <- modelHomotypic(annotations)
+    nExp_poi <- round(doublet_prediction * length(annotations))
+    nExp_poi.adj <- round(nExp_poi * (1 - homotypic.prop))
+    
+    ## Run DoubletFinder with varying classification stringencies ----------------------------------------------------------------
+    seu_object_lowconf <-
+      doubletFinder_v3(
+        seu_object,
+        PCs = 1:10,
+        pN = 0.25,
+        pK = 0.09,
+        nExp = nExp_poi,
+        reuse.pANN = FALSE,
+        sct = FALSE
+      )
+    seu_object_highconf <-
+      doubletFinder_v3(
+        seu_object,
+        PCs = 1:10,
+        pN = 0.25,
+        pK = 0.09,
+        nExp = nExp_poi.adj,
+        reuse.pANN = FALSE,
+        sct = FALSE
+      )
+    
+    ## extract the barcode and singlet/doublet calls
+    solm <-
+      as_tibble(seu_object_lowconf@meta.data) %>% select(barcode, doubletfinder_low_conf = contains("classifications"))
+    sohm <-
+      as_tibble(seu_object_highconf@meta.data) %>% select(barcode, doubletfinder_high_conf = contains("classifications"))
+    
+    ## join together and export as one
+    
+    return(full_join(solm, sohm))
+  }
+
+
+# a function to join up the qc and doubletfinder data------------------------------
+join_metadata <- function(cds, qc_data, doubletfinder_data) {
+  cds_tbl <- as_tibble(colData(cds))
+  cds_tbl <- left_join(cds_tbl, qc_data, by = "barcode")
+  cds_tbl <- left_join(cds_tbl, doubletfinder_data)
+  cds_df <- as.data.frame(cds_tbl)
+  row.names(cds_df) <- cds_df$barcode
+  cds <- new_cell_data_set(
+    expression_data = cds@assays@data$counts,
+    cell_metadata = cds_df,
+    gene_metadata = rowData(cds)
+  )
+  
+  
+  return(cds)
+}
+
+
 custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduction_method = "UMAP", 
                                  norm_method = c("log", "size_only"), lower_threshold = 0, 
                                  max.size = 10, ordering_type = c("cluster_row_col", "maximal_on_diag", 
@@ -817,19 +1169,3 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
   }
   g
 }
-
-# replace coldata with tibble ####
-
-replace_coldata <- function(input_cds, new_coldata_tibble) {
-  new_coldata_df <- as.data.frame(new_coldata_tibble)
-  row.names(new_coldata_df) <- new_coldata_df$barcode
-  return(
-    new_cell_data_set(
-      expression_data = input_cds@assays$data$counts,
-      cell_metadata = new_coldata_df,
-      gene_metadata = rowData(input_cds)
-    )
-  )
-}
-
-
