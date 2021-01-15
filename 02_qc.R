@@ -9,7 +9,7 @@ ind_qc_res <- pmap(.l = list(cds = cds_list,
 names(ind_qc_res) <- names(gex_pipestance_list)
 
 # inspect the plots
-# ind_qc_res[[1]][[3]]
+ind_qc_res[[4]][[1]]
 # ind_qc_res[[2]][[3]]
 # ind_qc_res[[3]][[3]]
 # ind_qc_res[[4]][[3]]
