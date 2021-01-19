@@ -1,29 +1,3 @@
-source("00_packages_functions.R")
-
-# cluster cells
-cds_aligned<-cluster_cells(cds_aligned)
-
-# identify marker genes
-if (!dir.exists("data_out")) {
-  dir.create("data_out")
-}
-
-
-marker_test_res_c <-
-  top_markers(
-    cds_aligned,
-    group_cells_by = "cluster",
-    reference_cells = 1000,
-    cores = 39
-  )
-
-marker_test_res_p <-
-  top_markers(
-    cds_aligned,
-    group_cells_by = "partition",
-    reference_cells = 1000,
-    cores = 39
-  )
 
 #manually assign celltypes to partitions
 cds_aligned$partition<-monocle3::partitions(cds_aligned)
@@ -119,5 +93,3 @@ marker_genes<-plot_cells_alt(
   w = 7.5,
   plot_type = "png"
 )
-
-save.image.pigz("cll_scrnaseq.RData",n.cores = 39)

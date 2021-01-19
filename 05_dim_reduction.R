@@ -30,3 +30,6 @@ cds_aligned <- align_cds(cds = cds_final, alignment_group = "pt")
 # reduce dimensions with cds_aligned
 cds_aligned <- reduce_dimension(cds_aligned, cores = 39)
 
+
+
+
