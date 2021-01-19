@@ -1,0 +1,85 @@
+---
+title: "CLL scRNAseq Report for Priya"
+author: "Brad Blaser"
+date: "1/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Hi Priya.  Your first task is to get github running on your computer.  This way you will be able to download the latest versions of all of the data and figures.
+
+If you haven't already, you should have IT install git and github desktop on your computer. These are available at https://git-scm.com/downloads and https://desktop.github.com/, respectively.  Make sure you ask IT to install git bash with the git program.
+
+Take some time to look into how these work.  I use the command line version of git.  The gui version does the same thing but with buttons instead of typed commands.  I will tell you how to use the command line version because it is so easy to do.  The first thing you will need to do is download the repository from github.  To do this:
+
+* Navigate to the folder you want to download the repository into.
+* Right click and select git bash here.  This should show some info about your computer and then indicate the directory you are in.
+* enter the following command:  
+```
+git clone https://github.com/blaserlab/cll_scrnaseq.git
+```
+* hit enter
+
+This will download everything into a repository folder.  For now, you will have to treat it as a read only folder, at least until you learn how to submit pull requests. But this is advanced stuff.  For now I just want you to learn how to get updated versions of things so I am not constantly emailing you data and figures.
+
+If you want to refresh the repository on your computer, you would go to the command line within the top level of the repository folder and enter the following command:
+
+```
+git pull
+```
+
+Try cloning the repository so you have what you need on your computer.
+
+## Data 
+
+Since we have been working through the analysis together, I won't summarize everything we've done already.  
+
+Here are the clusters we defined today using the three different methods:
+```{r dev='png',fig.align='center',fig.width=5,fig.height=4,dpi=300}
+umap_partition
+```
+
+```{r dev='png',fig.align='center',fig.width=5,fig.height=4,dpi=300}
+umap_leiden
+```
+
+```{r dev='png',fig.align='center',fig.width=5,fig.height=4,dpi=300}
+umap_louvain
+```
+
+Here are the data with the automated celltype labels from seurat:
+
+```{r dev='png',fig.align='center',fig.width=5,fig.height=4,dpi=300}
+umap_seurat_l1
+```
+
+```{r dev='png',fig.align='center',fig.width=5,fig.height=4,dpi=300}
+umap_seurat_l2
+```
+
+Here is the entire data set plotted by patient and timepoint (timepoints 1, 2 and 3):
+
+```{r dev='png',fig.align='center',fig.width=6.5,fig.height=10.0,dpi=300}
+umap_allpts_alltimes
+```
+
+
+I have printed out the top specific markers for each of the partitions and leiden clusters.  These can be found in the data_out folder of the repo.  The cell_goup column indicates either the partition or leiden cluster.  The last two columns hold the automated celltype assignments from the seurat analysis we did today.
+
+What I want you to do is look closely at the umap plots and try to see any patterns emerge.  Figure out what clusters we are going to want to look at more closely with our statistical tests to determine differential expression.  Can we make pairwise comparisons which are easier, or do we need to do multiple comparisons?
+
+You should also look at the marker test results file and come up with your best assignment of the partitions based on these genes.  Also see if you can come up with some assignments for the leiden clusters.
+
+We can have another meeting to discuss when you have this ready.
+
+Let me know if you have any questions.
+
+
+
+
+

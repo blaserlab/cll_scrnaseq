@@ -1,95 +1,58 @@
+source("00_packages_functions.R")
 
-#manually assign celltypes to partitions
-cds_aligned$partition<-monocle3::partitions(cds_aligned)
-cds_aligned$partition_assignment<-monocle3::partitions(cds_aligned)
-cds_aligned$cluster<-monocle3::clusters(cds_aligned)
-cds_aligned$cluster_assignment<-monocle3::clusters(cds_aligned)
+# make sure everything is in the correct order using left join
+colData(cds_final)$refUMAP_1 <- seurat_data$refUMAP_1
+colData(cds_final)$refUMAP_2 <- seurat_data$refUMAP_2
+colData(cds_final)$predicted.celltype.l1 <- seurat_data$predicted.celltype.l1
+colData(cds_final)$predicted.celltype.l2 <- seurat_data$predicted.celltype.l2
+colData(cds_final)$sanity_check <- seurat_data$barcode
+sum(rownames(colData(cds_final))!=colData(cds_final)$sanity_check)
+colData(cds_final)$sanity_check <- NULL
 
-custom_cp_plot(cds = cds_aligned,cp = "partition",group_label_size = 5)
-plot_cells_alt(cds = cds_aligned, gene_or_genes = "CD14")
+colData(cds_aligned)$refUMAP_1 <- seurat_data$refUMAP_1
+colData(cds_aligned)$refUMAP_2 <- seurat_data$refUMAP_2
+colData(cds_aligned)$predicted.celltype.l1 <- seurat_data$predicted.celltype.l1
+colData(cds_aligned)$predicted.celltype.l2 <- seurat_data$predicted.celltype.l2
+colData(cds_aligned)$sanity_check <- seurat_data$barcode
+sum(rownames(colData(cds_aligned))!=colData(cds_aligned)$sanity_check)
+colData(cds_aligned)$sanity_check <- NULL
 
-cds_aligned$partition_assignment<-recode(cds_aligned$partition, 
-                                         "1" = "B1",
-                                         "2" = "T", 
-                                         "3" = "B2",
-                                         "4" = "Mono1", 
-                                         "5" = "Mono2", 
-                                         "6" = "Plt",
-                                         "7" = "B3", 
-                                         "8" = "Erythrocyte",
-                                         "9" = "DC",
-                                         "10" = "B4")
+marker_test_res_partition_anno <- marker_test_res_partition %>%
+  left_join(
+    colData(cds_aligned) %>%
+      as_tibble() %>%
+      group_by(partition, predicted.celltype.l1) %>%
+      summarise(n = n()) %>%
+      top_n(1) %>%
+      select(cell_group = partition, predicted.celltype.l1)
+  ) %>%
+  left_join(
+    colData(cds_aligned) %>%
+      as_tibble() %>%
+      group_by(partition, predicted.celltype.l2) %>%
+      summarise(n = n()) %>%
+      top_n(1) %>%
+      select(cell_group = partition, predicted.celltype.l2)
+  ) %>%
+  write_csv("data_out/marker_test_res_partition_anno.csv")
 
-pa_lut<-tbl_df(colData(cds_aligned)) %>% 
-  select(partition,partition_assignment) %>% 
-  unique() %>% 
-  arrange(partition)
+marker_test_res_leiden_anno <- marker_test_res_leiden %>%
+  left_join(
+    colData(cds_aligned) %>%
+      as_tibble() %>%
+      group_by(leiden, predicted.celltype.l1) %>%
+      summarise(n = n()) %>%
+      top_n(1) %>%
+      select(cell_group = leiden, predicted.celltype.l1)
+  ) %>%
+  left_join(
+    colData(cds_aligned) %>%
+      as_tibble() %>%
+      group_by(leiden, predicted.celltype.l2) %>%
+      summarise(n = n()) %>%
+      top_n(1) %>%
+      select(cell_group = leiden, predicted.celltype.l2)
+  ) %>%
+  write_csv("data_out/marker_test_res_leiden_anno.csv")
 
-
-write.csv(marker_test_res_c %>% 
-            rename(cluster = cell_group) %>% 
-            arrange(cluster),
-          file = "data_out/cluster_top_markers.csv")
-
-write.csv(marker_test_res_p %>% 
-            rename(partition = cell_group) %>% 
-            left_join(.,pa_lut) %>% 
-            arrange(partition),
-          file = "data_out/partition_top_markers.csv")
-
-# cluster/partition plots
-if (!dir.exists("plots_out")) {
-  dir.create("plots_out")
-}
-
-#plot all together
-cluster_plot_all<-custom_cp_plot(cds = cds_aligned,
-               alpha = 0.2,
-               plot_title = "All Samples",
-               cp = "partition",
-               group_label_size = 5,
-               outfile = "plots_out/cluster_plot_all.pdf",
-               h = 4,
-               w = 4.4
-)
-
-cluster_plot_all_faceted <- custom_cp_plot(
-  cds = cds_aligned,
-  alpha = 0.2,
-  cp = "partition",
-  group_label_size = 3,
-  legend_pos = "none"
-) + theme(panel.background = element_rect(color = "grey80"))+
-  facet_grid(rows = vars(pt), cols = vars(timepoint)) +
-  theme(strip.background = element_blank())
-save_plot(
-  cluster_plot_all_faceted,
-  filename = "plots_out/cluster_plot_all_faceted.pdf",
-  base_height = 6.5,
-  base_width = 7
-)
-
-#leiden clusters 
-leiden_cluster_plot_all <- custom_cp_plot(
-  cds = cds_aligned,
-  alpha = 0.2,
-  plot_title = "All Samples",
-  cp = "cluster",
-  group_label_size = 5,
-  outfile = "plots_out/leiden_cluster_plot_all.pdf",
-  h = 4,
-  w = 4.4
-)
-
-#marker gene plots
-demo_genes<-c("CD79A","FCER2","TCL1A","CD3E","KLRB1","LYZ","CD14","PF4", "HBB")
-marker_genes<-plot_cells_alt(
-  cds = cds_aligned,
-  gene_or_genes = demo_genes,
-  alpha = 0.2,
-  ncol = 3,
-  outfile = "plots_out/marker_genes.png",
-  h = 6.5,
-  w = 7.5,
-  plot_type = "png"
-)
+#save.image.pigz("polina_jan2021.RData",n.cores = 39)
