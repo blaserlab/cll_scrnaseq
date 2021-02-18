@@ -1,6 +1,5 @@
 source("00_packages_functions.R")
 
-# make sure everything is in the correct order using left join
 colData(cds_final)$refUMAP_1 <- seurat_data$refUMAP_1
 colData(cds_final)$refUMAP_2 <- seurat_data$refUMAP_2
 colData(cds_final)$predicted.celltype.l1 <- seurat_data$predicted.celltype.l1
@@ -55,4 +54,4 @@ marker_test_res_leiden_anno <- marker_test_res_leiden %>%
   ) %>%
   write_csv("data_out/marker_test_res_leiden_anno.csv")
 
-#save.image.pigz("polina_jan2021.RData",n.cores = 39)
+# save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

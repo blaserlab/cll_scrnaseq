@@ -93,4 +93,4 @@ rm(
   seurat_metadata
 )
 
-#save.image.pigz("polina_jan2021.RData",n.cores = 39)
+# save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

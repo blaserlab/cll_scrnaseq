@@ -47,6 +47,7 @@ library("prodlim")
 library("ViSEAGO")
 library("rrvgo")
 library("biclust")
+library("readxl")
 theme_set(theme_cowplot(font_size = 11))
 # fix file path header
 fix_file_path <- function(x) {

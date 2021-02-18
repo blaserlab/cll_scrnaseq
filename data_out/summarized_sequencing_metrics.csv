@@ -1,7 +1,4 @@
 cds_name,cds_dim_cells,Mean Reads per Cell,Median Genes per Cell,Fraction Reads in Cells
-cds_cll_4_baseline,5164,30187,1517,83.6%
-cds_cll_4_btk_clone,3190,44625,1145,95.6%
-cds_cll_4_relapse,2691,52747,1461,89.5%
 cds_cll_5_baseline,3731,25378,1394,94.1%
 cds_cll_5_btk_clone,6769,12423,1313,95.8%
 cds_cll_5_relapse,6399,14871,818,82.7%

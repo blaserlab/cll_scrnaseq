@@ -39,4 +39,4 @@ marker_test_res_louvain <-
   )
 
 
-save.image.pigz("cll_scrnaseq.RData",n.cores = 39)
+# save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

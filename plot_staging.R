@@ -3,6 +3,7 @@ umap_allpts_alltimes <- custom_variable_plot(cds_aligned, var = "pt", foreground
   theme(strip.background = element_blank()) + 
   theme(legend.position = "none") + 
   theme(panel.background = element_rect(color = "grey80"))
+umap_allpts_alltimes
 
 umap_partition <- custom_variable_plot(cds_aligned, var = "partition", foreground_alpha = 0.2, overwrite_labels = T, group_label_size = 4)
 umap_leiden <- custom_variable_plot(cds_aligned, var = "leiden", foreground_alpha = 0.2, overwrite_labels = T, group_label_size = 4)
