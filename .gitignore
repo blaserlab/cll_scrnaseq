@@ -3,7 +3,7 @@
 .Rapp.history
 
 # Session Data files
-*.RData
+.RData
 
 # User-specific files
 .Ruserdata
@@ -43,3 +43,7 @@ working_files/*
 
 # local data
 local_data/*
+
+# local cache
+local_cache/*
+
