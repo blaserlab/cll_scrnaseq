@@ -5,7 +5,8 @@ cached_items <- c(
   "cds"
 )
 
-save.pigz(list = cached_items, file = "cached_items.RData", n.cores = 8)
+save.pigz(list = cached_items, file = "local_cache/cached_items.RData", n.cores = 8)
 rm(list = cached_items)
+
 
 save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

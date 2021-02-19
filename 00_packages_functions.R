@@ -26,7 +26,7 @@ library("rhdf5")
 library("glue")
 library("broom")
 library("Matrix.utils")
-#library("DESeq2")
+library("DESeq2")
 library("Seurat")
 library("SeuratDisk")
 library("patchwork")
@@ -48,6 +48,7 @@ library("ViSEAGO")
 library("rrvgo")
 library("biclust")
 library("readxl")
+library("fgsea")
 theme_set(theme_cowplot(font_size = 11))
 # fix file path header
 fix_file_path <- function(x) {
@@ -1170,3 +1171,98 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
   }
   g
 }
+
+rrvgo_scatter <-
+  function (simMatrix,
+            reducedTerms,
+            size = "score",
+            addLabel = TRUE,
+            labelSize = 4) {
+    x <- cmdscale(as.matrix(as.dist(1 - simMatrix)), eig = TRUE,
+                  k = 2)
+    df <-
+      cbind(as.data.frame(x$points), reducedTerms[match(rownames(x$points),
+                                                        reducedTerms$go), c("term", "parent", "parentTerm", "size", "score")])
+    p <-
+      ggplot(df, aes(x = V1, y = V2, color = parentTerm)) +
+      geom_point(aes(size = !!sym(size)), alpha = 0.5) +
+      scale_color_discrete(guide = FALSE) +
+      scale_size_continuous(guide = FALSE, range = c(0, 10)) +
+      geom_text_repel(
+        aes(label = parentTerm),
+        segment.size = 0.25,
+        data = subset(df, parent == rownames(df)),
+        box.padding = grid::unit(0.5, "lines"),
+        size = labelSize,
+        color = "black",
+        max.overlaps = 100,
+        force = 2,
+        seed = 1234,
+        segment.curvature = -0.1,
+        segment.square = TRUE,
+        segment.inflect = TRUE,
+        min.segment.length = 0
+      ) +
+      labs(x = "PCoA 1", y = "PCoA 2")
+   
+   return(p)
+  }
+
+# function to generate named color vector for heatmap annotations.
+make_named_color_vector <- function(base_vector, colors) {
+  names(colors) <- base_vector
+  return(colors)
+}
+
+# pseudobulk function
+
+pseudobulk_dge <- function(cds_deseq, replicate_variable, class_variable) {
+  
+  groups <-
+    colData(cds_deseq) %>%
+    as_tibble() %>% 
+    select(replicate = !!sym(replicate_variable), class = !!sym(class_variable))
+
+  # get the aggregate counts
+  aggregate_counts <-
+    aggregate.Matrix(t(counts(cds_deseq)), groupings = groups, fun = "sum")
+  counts_matrix <- as.matrix(t(aggregate_counts))
+  # make the coldata for deseq
+  samples <- colnames(counts_matrix)
+  classes <- str_extract(colnames(counts_matrix), "timepoint_.")
+  coldata <- data.frame(classes, row.names = samples)
+  stopifnot(all(rownames(coldata) == colnames(counts_matrix)))
+
+  # make the deseq object
+  dds <- DESeqDataSetFromMatrix(countData = counts_matrix,
+                                colData = coldata,
+                                design = ~ classes)
+
+  # do the thing
+  dds <- DESeq(dds)
+  res <- results(dds)
+  result <-
+    as.data.frame(res)  %>% rownames_to_column(var = "id") %>% as_tibble() %>%
+    left_join(., as_tibble(rowData(cds_deseq)[, c("id", "gene_short_name")]))
+
+  #qc
+  rld <- rlog(dds, blind = TRUE)
+  pca_plot <- DESeq2::plotPCA(rld, intgroup = "classes")
+
+  # Extract the rlog matrix from the object and compute pairwise correlation values
+  rld_mat <- assay(rld)
+  rld_cor <- cor(rld_mat)
+
+  # Plot heatmap
+  heatmap <- pheatmap(rld_cor, annotation = coldata[, c("classes"), drop = F])
+  dispersion <- plotDispEsts(dds)
+
+  return_list <- list(res@elementMetadata@listData[["description"]],
+                      result,
+                      pca_plot,
+                      heatmap,
+                      dispersion
+                      )
+  return(return_list)
+}
+
