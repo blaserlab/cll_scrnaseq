@@ -66,4 +66,3 @@ summarized_sequencing_metrics <-
   ) %>%
   write_csv("data_out/summarized_sequencing_metrics.csv")
 
-#save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

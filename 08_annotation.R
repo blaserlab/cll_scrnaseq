@@ -54,4 +54,3 @@ marker_test_res_leiden_anno <- marker_test_res_leiden %>%
   ) %>%
   write_csv("data_out/marker_test_res_leiden_anno.csv")
 
-# save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)

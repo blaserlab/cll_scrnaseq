@@ -16,4 +16,3 @@ doubletfinder_list <-
 
 names(doubletfinder_list) <- names(cds_list)
 
-#save.image.pigz("cll_scrnaseq_2021.RData",n.cores = 39)
