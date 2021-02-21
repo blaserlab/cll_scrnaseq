@@ -47,3 +47,4 @@ local_data/*
 # local cache
 local_cache/*
 
+/rdata

@@ -1,0 +1,5 @@
+outs:
+- md5: 4280dbafc563022ba7b7c34b7f6d950c.dir
+  size: 9251755050
+  nfiles: 2
+  path: rdata
