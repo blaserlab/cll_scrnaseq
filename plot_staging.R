@@ -146,3 +146,31 @@ module_bubble_plots$`Module 5`
 module_bubble_plots$`Module 7`
 module_bubble_plots$`Module 9`
 
+# gene expression #### ----------------------------------------------------------------
+
+plot_cells_alt(cds_aligned, gene_or_genes = "PDE4D") +
+  facet_wrap(facets = vars(timepoint))
+
+# violin plots ####---------------------------------------------------------------
+
+custom_violin_plot(cds= cds_aligned[,colData(cds_aligned)$predicted.celltype.l1 == "B"],
+                   variable = "timepoint", 
+                   # genes_to_plot = c("DGKG", "TCF7","NFKBIA", "EBF1", "PDE4D"),
+                   genes_to_plot = c("CD37", "EIF1", "CD79A"),
+                   include_jitter = T)
+
+plot_genes_violin(cds_aligned[rowData(cds_aligned)$gene_short_name %in% c("DGKG", "TCF7","NFKBIA", "EBF1"),
+                              colData(cds_aligned)$predicted.celltype.l1 == "B"],
+                  group_cells_by = "timepoint_pretty")
+
+plot_genes_violin(cds_aligned[rowData(cds_aligned)$gene_short_name %in% c("CD37", "EIF1", "CD79A"),
+                              colData(cds_aligned)$predicted.celltype.l1 == "B"],
+                  group_cells_by = "timepoint_pretty")
+
+# gene dotplots #### -----------------------------------------------------------
+custom_gene_dotplot(
+  cds = cds_aligned[, colData(cds_aligned)$predicted.celltype.l1 == "B"],
+  # markers = c("DGKG", "TCF7","EBF1", "PDE4D"),
+  markers = c("CD37", "EIF1", "CD79A"),
+  group_cells_by = "timepoint"
+)

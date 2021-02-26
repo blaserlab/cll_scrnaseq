@@ -646,8 +646,8 @@ custom_violin_plot <-
            #sig_lab_y = 1,
            #yplotmax
   ) {
-    my_comparisons <-
-      comparison_list#(list(c(comparator1,comparator2),c(comparator1,comparator3)...))
+    # my_comparisons <-
+    #   comparison_list#(list(c(comparator1,comparator2),c(comparator1,comparator3)...))
     data_to_plot <-
       plot_genes_violin(cds_subset = cds[rowData(cds)$gene_short_name %in% genes_to_plot,], group_cells_by = variable)[["data"]]
     p1 <-

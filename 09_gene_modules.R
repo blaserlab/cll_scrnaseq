@@ -133,3 +133,4 @@ module_rrvgo <- map(
   }
 ) %>% set_names(module_titles)
 
+View(module_rrvgo$`Module 7`$reducedTerms)
