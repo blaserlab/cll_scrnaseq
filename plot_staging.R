@@ -167,6 +167,13 @@ plot_genes_violin(cds_aligned[rowData(cds_aligned)$gene_short_name %in% c("CD37"
                               colData(cds_aligned)$predicted.celltype.l1 == "B"],
                   group_cells_by = "timepoint_pretty")
 
+plot_genes_violin(cds_aligned[rowData(cds_aligned)$gene_short_name == "DDX17",
+                              colData(cds_aligned)$predicted.celltype.l1 == "B"],
+                  group_cells_by = "timepoint_pretty"
+                  )
+
+
+
 # gene dotplots #### -----------------------------------------------------------
 custom_gene_dotplot(
   cds = cds_aligned[, colData(cds_aligned)$predicted.celltype.l1 == "B"],
@@ -174,3 +181,32 @@ custom_gene_dotplot(
   markers = c("CD37", "EIF1", "CD79A"),
   group_cells_by = "timepoint"
 )
+
+# gene expression umaps--------------------------------------------------------------------
+dir.create("plots_out/single_gene_umaps")
+walk(
+  .x = c("BTG1", "RPL39", "RPLP1", "RPLP2", "RPS28", "CD37", "DDX5", "EIF1", "TMSB10", "CD74", "DDX17", "GRB2", "MALAT1", "RALGPS2", "RPS27", "FLNB", "DGKG", "ZDHHC19", "PDE4D", "EBF1", "DENND3", "BHLHE41"),
+  .f = function(x) {
+    p <- plot_cells_alt(cds = cds_aligned, gene_or_genes = x, alpha = 0.4) +
+      facet_wrap(facets = vars(timepoint_pretty)) +
+      labs(title = x) +
+      theme(plot.title = element_text(hjust = 0.5))
+    save_plot(p, file = paste0("plots_out/single_gene_umaps/", x, ".png"), base_width = 7.5, base_height = 4.0)
+  }
+)
+
+# gene expression violins
+
+dir.create("plots_out/single_gene_violins")
+walk(
+  .x = c("BTG1", "RPL39", "RPLP1", "RPLP2", "RPS28", "CD37", "DDX5", "EIF1", "TMSB10", "CD74", "DDX17", "GRB2", "MALAT1", "RALGPS2", "RPS27", "FLNB", "DGKG", "ZDHHC19", "PDE4D", "EBF1", "DENND3", "BHLHE41"),
+  .f = function(x) {
+    p <- plot_genes_violin(cds = cds_aligned[rowData(cds_aligned)$gene_short_name == x,
+                                             colData(cds_aligned)$predicted.celltype.l1 == "B"], 
+                           group_cells_by = "timepoint_pretty",)
+    save_plot(p, file = paste0("plots_out/single_gene_violins/", x, ".png"), base_width = 5, base_height = 4.0)
+  }
+)
+
+  
+
