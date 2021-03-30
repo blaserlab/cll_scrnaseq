@@ -195,6 +195,8 @@ walk(
   }
 )
 
+plot_cells_alt(cds = cds_aligned, gene_or_genes = "EBF1", alpha = 0.8)
+
 # gene expression violins
 
 dir.create("plots_out/single_gene_violins")
@@ -209,4 +211,35 @@ walk(
 )
 
   
+# read count umap
+cds_aligned <- monocle3::detect_genes(cds_aligned)
+colData(cds_aligned)$num_genes_expressed <- as.numeric(colData(cds_aligned)$num_genes_expressed)
+custom_variable_plot(cds = cds_aligned, var = "num_genes_expressed", foreground_alpha = 0.2)
+
+# read count violins
+
+custom_variable_plot(cds = cds_aligned, var = "predicted.celltype.l1", value_to_highlight = c("B","Mono"))
+
+colData(cds_aligned) %>%
+  as_tibble() %>%
+  filter(predicted.celltype.l1 %in% c("B", "Mono")) %>%
+  ggplot(mapping = aes(x = predicted.celltype.l1, y = num_genes_expressed, fill = predicted.celltype.l1)) +
+  geom_jitter(color = "black", fill = "transparent", shape = 21, alpha = 0.1) +
+  geom_violin(color = "black") +
+  scale_fill_viridis_d(alpha = 0.2)
+
+# gene expression violins
+
+priya_interesting_genes_violin <- custom_violin_plot(cds_regression_subset, 
+                   genes_to_plot = priya_interesting_genes, 
+                   variable = "timepoint_pretty", 
+                   rows = 2,
+                   include_jitter = T,
+                   facet_scale = "free_y",
+                   legend_pos = "bottom") +
+  theme(axis.text.x = element_blank()) + 
+  theme(axis.ticks.x = element_blank())
+  
+save_plot(priya_interesting_genes_violin, "plots_out/priya_interesting_genes_violin.png", base_width = 7.5, base_height = 4)
+
 

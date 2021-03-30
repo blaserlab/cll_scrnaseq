@@ -453,7 +453,7 @@ custom_variable_plot<-function(cds,
                shape = 21, 
                alpha = foreground_alpha, 
                size = cell_size)
-  if (class(data_long$value)=="numeric") {
+  if (class(data_long$value) %in% c("numeric", "integer")) {
     plot<-plot+
       scale_fill_viridis_c(guide = "colorbar",na.value = "transparent")+
       scale_color_viridis_c(guide = F, na.value = "grey80")
@@ -648,7 +648,8 @@ custom_violin_plot <-
            h,
            rows = 1,
            show_x_label = TRUE,
-           legend_pos = "none"#,
+           legend_pos = "none",
+           facet_scale = "fixed"#,
            #comparison_list = NULL,
            #sig_lab_y = 1,
            #yplotmax
@@ -710,7 +711,7 @@ custom_violin_plot <-
       ) +
       theme(plot.title = element_text(hjust = 0.5)) +
       #theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      facet_wrap(~ gene_short_name, nrow = rows) +
+      facet_wrap(~ gene_short_name, nrow = rows, scales = facet_scale) +
       theme(strip.background = element_rect(fill = "transparent"))
     if (show_x_label == F) {
       p1 <- p1 + theme(axis.text.x = element_blank())
@@ -1048,24 +1049,27 @@ join_metadata <- function(cds, qc_data, doubletfinder_data) {
 }
 
 
-custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduction_method = "UMAP", 
-                                 norm_method = c("log", "size_only"), lower_threshold = 0, 
-                                 max.size = 10, ordering_type = c("cluster_row_col", "maximal_on_diag", 
-                                                                  "none"), axis_order = c("group_marker", "marker_group"), 
-                                 flip_percentage_mean = FALSE, pseudocount = 1, scale_max = 3, 
-                                 scale_min = -3, colorscale_name = NULL, sizescale_name = NULL) 
-{
-  assertthat::assert_that(methods::is(cds, "cell_data_set"))
-  if (!is.null(group_cells_by)) {
-    assertthat::assert_that(group_cells_by %in% c("cluster", 
-                                                  "partition") | group_cells_by %in% names(colData(cds)), 
-                            msg = paste("group_cells_by must be a column in", 
-                                        "the colData table."))
-  }
-  norm_method = match.arg(norm_method)
-  gene_ids = as.data.frame(fData(cds)) %>% tibble::rownames_to_column() %>% 
-    dplyr::filter(rowname %in% markers | gene_short_name %in% 
-                    markers) %>% dplyr::pull(rowname)
+custom_gene_dotplot <- function (cds,
+                                 markers,
+                                 group_cells_by = "cluster", 
+                                 reduction_method = "UMAP", 
+                                 norm_method = c("log", "size_only"),
+                                 lower_threshold = 0, 
+                                 max.size = 10,
+                                 ordering_type = c("cluster_row_col", 
+                                                   "maximal_on_diag", 
+                                                   "none"), 
+                                 axis_order = c("group_marker", "marker_group"), 
+                                 flip_percentage_mean = FALSE, 
+                                 pseudocount = 1, 
+                                 scale_max = 3, 
+                                 scale_min = -3, 
+                                 colorscale_name = NULL, 
+                                 sizescale_name = NULL) {
+  norm_method <- match.arg(norm_method)
+  gene_ids <- as.data.frame(fData(cds)) %>% 
+    tibble::rownames_to_column() %>% 
+    dplyr::filter(rowname %in% markers | gene_short_name %in% markers) %>% dplyr::pull(rowname)
   if (length(gene_ids) < 1) 
     stop(paste("Please make sure markers are included in the gene_short_name\",\n               \"column of the fData!"))
   if (flip_percentage_mean == FALSE) {
@@ -1101,10 +1105,11 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
     stop(paste("Only one type in group_cells_by. To use plot_genes_by_group,", 
                "please specify a group with more than one type. "))
   }
-  names(cell_group) = colnames(cds)
+  names(cell_group) <- colnames(cds)
   exprs_mat$Group <- cell_group[exprs_mat$Cell]
-  exprs_mat = exprs_mat %>% dplyr::filter(is.na(Group) == FALSE)
-  ExpVal <- exprs_mat %>% dplyr::group_by(Group, Gene) %>% 
+  exprs_mat <- exprs_mat %>% dplyr::filter(is.na(Group) == FALSE)
+  ExpVal <- exprs_mat %>% 
+    dplyr::group_by(Group, Gene) %>% 
     dplyr::summarize(mean = mean(log(Expression + pseudocount)), 
                      percentage = sum(Expression > lower_threshold)/length(Expression))
   ExpVal$mean <- ifelse(ExpVal$mean < scale_min, scale_min, 
@@ -1112,8 +1117,7 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
   ExpVal$mean <- ifelse(ExpVal$mean > scale_max, scale_max, 
                         ExpVal$mean)
   ExpVal$Gene <- fData(cds)[ExpVal$Gene, "gene_short_name"]
-  res <- reshape2::dcast(ExpVal[, 1:4], Group ~ Gene, value.var = colnames(ExpVal)[2 + 
-                                                                                     major_axis])
+  res <- reshape2::dcast(ExpVal[, 1:4], Group ~ Gene, value.var = colnames(ExpVal)[2 + major_axis])
   group_id <- res[, 1]
   res <- res[, -1]
   row.names(res) <- group_id
@@ -1122,10 +1126,17 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
     row_dist[is.na(row_dist)] <- 1
     col_dist <- stats::as.dist((1 - stats::cor(res))/2)
     col_dist[is.na(col_dist)] <- 1
-    ph <- pheatmap::pheatmap(res, useRaster = T, cluster_cols = TRUE, 
-                             cluster_rows = TRUE, show_rownames = F, show_colnames = F, 
-                             clustering_distance_cols = col_dist, clustering_distance_rows = row_dist, 
-                             clustering_method = "ward.D2", silent = TRUE, filename = NA)
+    ph <- pheatmap::pheatmap(res, 
+                             useRaster = T, 
+                             cluster_cols = TRUE, 
+                             cluster_rows = TRUE, 
+                             show_rownames = F, 
+                             show_colnames = F, 
+                             clustering_distance_cols = col_dist, 
+                             clustering_distance_rows = row_dist, 
+                             clustering_method = "ward.D2", 
+                             silent = TRUE, 
+                             filename = NA)
     ExpVal$Gene <- factor(ExpVal$Gene, levels = colnames(res)[ph$tree_col$order])
     ExpVal$Group <- factor(ExpVal$Group, levels = row.names(res)[ph$tree_row$order])
   }
@@ -1133,34 +1144,48 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
     order_mat <- t(apply(res, major_axis, order))
     max_ind_vec <- c()
     for (i in 1:nrow(order_mat)) {
-      tmp <- max(which(!(order_mat[i, ] %in% max_ind_vec)))
+      tmp <- max(which(!(order_mat[i,] %in% max_ind_vec)))
       max_ind_vec <- c(max_ind_vec, order_mat[i, tmp])
     }
     max_ind_vec <- max_ind_vec[!is.na(max_ind_vec)]
     if (major_axis == 1) {
-      max_ind_vec <- c(max_ind_vec, setdiff(1:length(markers), 
+      max_ind_vec <- c(max_ind_vec, setdiff(1:length(markers),
                                             max_ind_vec))
-      ExpVal$Gene <- factor(ExpVal$Gene, levels = dimnames(res)[[2]][max_ind_vec])
+      ExpVal$Gene <-
+        factor(ExpVal$Gene, levels = dimnames(res)[[2]][max_ind_vec])
     }
     else {
-      max_ind_vec <- c(max_ind_vec, setdiff(1:length(unique(exprs_mat$Group)), 
-                                            max_ind_vec))
-      ExpVal$Group <- factor(ExpVal$Group, levels = dimnames(res)[[1]][max_ind_vec])
+      max_ind_vec <-
+        c(max_ind_vec, setdiff(1:length(unique(
+          exprs_mat$Group
+        )),
+        max_ind_vec))
+      ExpVal$Group <-
+        factor(ExpVal$Group, levels = dimnames(res)[[1]][max_ind_vec])
     }
   }
   else if (ordering_type == "none") {
     ExpVal$Gene <- factor(ExpVal$Gene, levels = markers)
   }
   if (flip_percentage_mean) {
-    g <- ggplot(ExpVal, aes(y = Gene, x = Group)) + geom_point(aes(colour = percentage, 
-                                                                   size = mean)) + viridis::scale_color_viridis(name = ifelse(is.null(colorscale_name),"proportion",colorscale_name)) + 
-      scale_size(name = ifelse(is.null(sizescale_name),"log(mean + 0.1)",sizescale_name), range = c(0, 
-                                                     max.size))
+    g <-
+      ggplot(ExpVal, aes(y = Gene, x = Group)) + 
+      geom_point(aes(colour = percentage, size = mean)) + 
+      viridis::scale_color_viridis(name = ifelse(is.null(colorscale_name), "proportion", colorscale_name)) +
+      scale_size(
+        name = ifelse(is.null(sizescale_name), "log(mean + 0.1)", sizescale_name),
+        range = c(0,max.size)
+      )
   }
   else {
-    g <- ggplot(ExpVal, aes(y = Gene, x = Group)) + geom_point(aes(colour = mean, 
-                                                                   size = percentage)) + viridis::scale_color_viridis(name = ifelse(is.null(colorscale_name),"log(mean + 0.1)",colorscale_name)) + 
-      scale_size(name = ifelse(is.null(sizescale_name),"proportion",sizescale_name), range = c(0, max.size))
+    g <-
+      ggplot(ExpVal, aes(y = Gene, x = Group)) + 
+      geom_point(aes(colour = mean, size = percentage)) + 
+      viridis::scale_color_viridis(name = ifelse(is.null(colorscale_name), "log(mean + 0.1)", colorscale_name)) +
+      scale_size(
+        name = ifelse(is.null(sizescale_name), "proportion", sizescale_name),
+        range = c(0, max.size)
+      )
   }
   if (group_cells_by == "cluster") {
     g <- g + xlab("Cluster")
@@ -1171,8 +1196,9 @@ custom_gene_dotplot <- function (cds, markers, group_cells_by = "cluster", reduc
   else {
     g <- g + xlab(group_cells_by)
   }
-  g <- g + ylab("Gene") + theme(axis.text.x = element_text(angle = 30, 
-                                                                                  hjust = 1))
+  g <- g + 
+    ylab("Gene") + 
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))
   if (axis_order == "marker_group") {
     g <- g + coord_flip()
   }
