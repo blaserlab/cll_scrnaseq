@@ -8,4 +8,21 @@ monocle_dge_bcells_timepoint <-
     reference_cells = 1000,
     cores = 39,
   )
-monocle_dge_bcells_timepoint %>% arrange(cell_group) %>% rename(timepoint = cell_group) %>% write_csv("data_out/timepoint_top_markers.csv")
+monocle_dge_bcells_timepoint %>% 
+  arrange(cell_group) %>% 
+  rename(timepoint = cell_group) %>% 
+  write_csv("data_out/timepoint_top_markers.csv")
+
+# monocytes--------------------------------------------------
+monocle_dge_mono_timepoint <-
+  top_markers(
+    cds = cds_final[, colData(cds_final)$predicted.celltype.l1 == "Mono"],
+    group_cells_by = "timepoint",
+    genes_to_test_per_group = 50,
+    reference_cells = 1000,
+    cores = 39,
+  )
+monocle_dge_mono_timepoint %>% 
+  arrange(cell_group) %>% 
+  rename(timepoint = cell_group) %>% 
+  write_csv("data_out/timepoint_top_markers_mono.csv")

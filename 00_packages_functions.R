@@ -1299,3 +1299,28 @@ pseudobulk_dge <- function(cds_deseq, replicate_variable, class_variable) {
   return(return_list)
 }
 
+# selector function for topGO
+selector <- function(theScore) {
+  return (theScore == 1)
+}
+# a function to summarize go terms
+
+summarize_go <- function(x, reduce_threshold) {
+    simMatrix <-
+      calculateSimMatrix(x = x[[3]]$GO.ID,
+                         ont = "BP",
+                         orgdb = "org.Dr.eg.db")
+    scores <- setNames(-log10(ifelse(is.na(
+      as.numeric(x[[3]]$classicFisher)),
+      1e-30,
+      as.numeric(x[[3]]$classicFisher)
+    )),
+    x[[3]]$GO.ID)
+    reducedTerms <- reduceSimMatrix(simMatrix,
+                                    scores,
+                                    threshold = reduce_threshold,
+                                    orgdb = "org.Dr.eg.db")
+    returnlist <- list(simMatrix, scores, reducedTerms)
+    names(returnlist) <- c("simMatrix", "scores", "reducedTerms")
+    return(returnlist)
+}
