@@ -12,4 +12,4 @@ library(ggrepel)
 
 # project data-------------------------------------
 # run once to load, run again to unload
-# requireData(package = "",quietly = F)
+requireData(package = "cll.scrnaseq.datapkg",quietly = F)
