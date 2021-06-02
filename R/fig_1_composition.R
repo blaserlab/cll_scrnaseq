@@ -1,23 +1,21 @@
-# source("R/configs.R")
-# source("fig_1_staging.R")
+source("R/configs.R")
+source("R/fig_1_staging.R")
 
 fig_1_top <-
   plot_grid(
-    umap_partitions + theme(plot.margin = margin(t = 15)),
     umap_density,
-    align = "h",
-    axis = "b",
-    ncol = 2, 
-    rel_widths = c(1,1),
-    labels = c("A","B")
+    NULL,
+    ncol = 2,
+    rel_widths = c(4,1),
+    labels = c("A","")
     )
     
 fig_1_mid <- 
   plot_grid(
-    umap_binned_leiden,
+    volcano_BTK_bcells,
     volcano_MRD1_BTK,
     volcano_MRD2_BTK,
-    labels = c("C","D","E"),
+    labels = c("B","C","D"),
     align = "h",
     axis = "b",
     ncol = 3,
