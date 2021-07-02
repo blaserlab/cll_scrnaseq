@@ -33,7 +33,7 @@ walk2(
     }
   )
 
-# B cells in BTK vs MRD at each timepoint 
+# B cells in BTK vs MRD at each timepoint -------------------------------
 walk2(
   .x = pseudobulk_bcell_pt_type_timepoints,
   .y = names(pseudobulk_bcell_pt_type_timepoints),
@@ -47,7 +47,7 @@ walk2(
   }
 )
 
-# B cell subclusters
+# B cell subclusters (pseudobulk)--------------------------------------
 
 pseudobulk_MRD1_BTK[[1]] %>% write_lines(str_glue("{network_tables}/MRD1_v_BTK_cluster_header.txt"))
 pseudobulk_MRD1_BTK[[2]] %>% write_csv(str_glue("{network_tables}/MRD1_v_BTK_cluster.csv"))
@@ -55,3 +55,8 @@ pseudobulk_MRD1_BTK[[2]] %>% write_csv(str_glue("{network_tables}/MRD1_v_BTK_clu
 
 pseudobulk_MRD2_BTK[[1]] %>% write_lines(str_glue("{network_tables}/MRD2_v_BTK_cluster_header.txt"))
 pseudobulk_MRD2_BTK[[2]] %>% write_csv(str_glue("{network_tables}/MRD2_v_BTK_cluster.csv"))
+
+# B cell subcluster top markers (not pseudobulk)--------------------
+
+cds_main_bcell_subpop_top_markers %>%
+  write_csv(str_glue("{network_tables}/bcell_subpop_top_markers.csv"))

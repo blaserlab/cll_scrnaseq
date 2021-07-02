@@ -189,11 +189,23 @@ module_heatmap_bcells <-
   , padding = unit(c(2,5,2,15),"mm")))# bltr
 
 
+dotplot_markers <- c(
+  "FCER2",
+  "TCL1A",
+  "NFKBIA",
+  "PIM3",
+  "MAP3K8",
+  "RELB",
+  "CNTNAP2",
+  "CXXC5",
+  # "ITGB1",
+  "RAC2"
+  # "KLF6"
+)
+
+subpop_gene_dotplot <- bb_gene_dotplot(cds = cds_main[,colData(cds_main)$leiden_assignment_2 %in% c("BTK", "MRD1","MRD2","BTKsmall")], 
+                group_cells_by = "leiden_assignment_2",
+                markers = dotplot_markers) +
+  labs(x = NULL, y = NULL)
 
 
-# go term bubbles--------------------------------------------------
-
-mod4_bubble <- bb_goscatter(simMatrix = module_summary_0.9$`Module 4`$simMatrix, 
-             reducedTerms = module_summary_0.9$`Module 4`$reducedTerms,size = "score",
-             addLabel = T,
-             labelSize = 4) 

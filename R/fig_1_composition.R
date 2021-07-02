@@ -27,7 +27,7 @@ fig_1_mid <-
 fig_1_bottom <- 
   plot_grid(
     module_heatmap_bcells,
-    mod4_bubble + theme(plot.margin = margin(t = 35, b = 35)),
+    subpop_gene_dotplot,
     ncol = 2,
     rel_widths = c(1,1),
     labels = c("E","F")
