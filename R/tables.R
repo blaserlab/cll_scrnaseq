@@ -60,3 +60,12 @@ pseudobulk_MRD2_BTK[[2]] %>% write_csv(str_glue("{network_tables}/MRD2_v_BTK_clu
 
 cds_main_bcell_subpop_top_markers %>%
   write_csv(str_glue("{network_tables}/bcell_subpop_top_markers.csv"))
+
+# T cell phenotype:  pseudobulk analsysis_--------------------------------------
+
+tcell_subpop_pseudobulk[[1]] %>% write_lines(str_glue("{network_tables}/tcell_subpop_pseudobulk_header.txt"))
+tcell_subpop_pseudobulk_tbl %>% write_csv(str_glue("{network_tables}/tcell_subpop_pseudobulk.csv"))
+
+# T cell regression
+
+tcell_subpop_regression %>% write_csv(str_glue("{network_tables}/tcell_subpop_regression.csv"))
