@@ -2,6 +2,9 @@
 # renv::init()
 # renv::snapshot()
 
+# uncomment and run to restore packages from the lock file (for example in new installation)
+#renv::restore()
+
 # blaseRtools and additional dependencies you may have to install since they are not recognized by renv::init
 # renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/blaseRtools")
 # renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/DESeq2")

@@ -41,11 +41,6 @@ vignettes/*.pdf
 # working files
 working_files/*
 
-# local data
-local_data/*
-
-# local cache
-local_cache/*
-
 old/*
 
+*.rda
