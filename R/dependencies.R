@@ -40,7 +40,7 @@ library("ggpubr")
 library("rstatix")
 
 # uncomment and use the following to install or update the data package---------------------------------------
-bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
+# bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
 
 # project data-------------------------------------
 # run once to load, run again to unload

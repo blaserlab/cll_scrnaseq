@@ -160,3 +160,19 @@ bb_gene_dotplot_test <-
       return(g)
     }
   } 
+
+cds_main
+counts(cds_main)
+rowData(cds_main)
+colData(cds_main)
+
+#(barcode, call)
+
+left_join(as_tibble(colData(cds_main)), thomas_data)
+colData(cds_main)$newcolumn <- new_column
+
+bb_var_umap(cds_main, "partition_assignment", overwrite_labels = T)
+
+fastSave::save.pigz(cds_main, file = "")
+
+
