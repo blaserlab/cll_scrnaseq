@@ -65,6 +65,7 @@ cds_main_bcell_subpop_top_markers %>%
 
 tcell_subpop_pseudobulk[[1]] %>% write_lines(str_glue("{network_tables}/tcell_subpop_pseudobulk_header.txt"))
 tcell_subpop_pseudobulk_tbl %>% write_csv(str_glue("{network_tables}/tcell_subpop_pseudobulk.csv"))
+tcell_subpop_pseudobulk_tbl %>% filter(padj<0.05) %>% write_csv(str_glue("{network_tables}/tcell_subpop_pseudobulk_significant.csv"))
 
 # T cell regression
 

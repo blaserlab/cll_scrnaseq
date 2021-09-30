@@ -175,4 +175,15 @@ bb_var_umap(cds_main, "partition_assignment", overwrite_labels = T)
 
 fastSave::save.pigz(cds_main, file = "")
 
+bb_gene_umap(cds_main, "par")
+tcell_subpop_pseudobulk_tbl %>% filter(padj<0.05) %>% filter(log2FoldChange<0)
+
+
+bb_gene_umap(cds_main, "CD4")
+bb_gene_umap(cds_main, "CD8A")
+colData(cds_main) %>% as_tibble() %>% write_csv(str_glue("{network_tables}/cell_metadata.csv"))
+bb_var_umap(cds_main, "seurat_celltype_l1", value_to_highlight = "CD4 T")
+bb_var_umap(cds_main, "seurat_celltype_l1", value_to_highlight = "CD8 T")
+
+
 

@@ -6,7 +6,7 @@
 #renv::restore()
 
 # blaseRtools and additional dependencies you may have to install since they are not recognized by renv::init
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/blaseRtools")
+# renv::install("/usr/lib/R/site-library/blaseRtools")
 # renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/DESeq2")
 # renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/genefilter")
 # renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/annotate")
@@ -40,7 +40,7 @@ library("ggpubr")
 library("rstatix")
 
 # uncomment and use the following to install or update the data package---------------------------------------
-# bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
+bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
 
 # project data-------------------------------------
 # run once to load, run again to unload
