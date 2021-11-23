@@ -7,24 +7,6 @@
 
 # blaseRtools and additional dependencies you may have to install since they are not recognized by renv::init
 # renv::install("/usr/lib/R/site-library/blaseRtools")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/DESeq2")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/genefilter")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/annotate")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/AnnotationDbi")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/KEGGREST")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/Biostrings")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/geneplotter")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/DoubletFinder")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/Seurat")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/SeuratDisk")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/rrvgo")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/GO.db")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/GOSemSim")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/scater")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/topGO")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/fastSave")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/hexbin")
-# renv::install("~/R/x86_64-pc-linux-gnu-library/4.1/graph")
 
 # load core packages for the analysis
 library("blaseRtools")
@@ -38,7 +20,8 @@ library("RColorBrewer")
 library("ggrepel")
 library("ggpubr")
 library("rstatix")
-
+library("pander")
+library("Rcpp")
 # uncomment and use the following to install or update the data package---------------------------------------
 bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
 

@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.1.0",
+    "Version": "4.1.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -9,7 +9,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.13"
+    "Version": "3.14"
   },
   "Packages": {
     "AnnotationDbi": {
@@ -279,10 +279,12 @@
     },
     "Rcpp": {
       "Package": "Rcpp",
-      "Version": "1.0.6",
-      "Source": "Repository",
+      "Version": "1.0.7",
+      "Source": "Local",
       "Repository": "CRAN",
-      "Hash": "dbb5e436998a7eba5a9d682060533338"
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/Rcpp",
+      "Hash": "77348f27fd7069edcc0559a027d82636"
     },
     "RcppAnnoy": {
       "Package": "RcppAnnoy",
@@ -319,6 +321,13 @@
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
+    "RcppRoll": {
+      "Package": "RcppRoll",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "84a03997fbb5acfb3c9b43bad88fea1f"
+    },
     "ResidualMatrix": {
       "Package": "ResidualMatrix",
       "Version": "1.2.0",
@@ -331,6 +340,20 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "fb135751ed3f00f33890826823ebe332"
+    },
+    "Rhtslib": {
+      "Package": "Rhtslib",
+      "Version": "1.24.0",
+      "Source": "Bioconductor",
+      "Hash": "a918531ecb469a907c6244337dbb9e10"
+    },
+    "Rsamtools": {
+      "Package": "Rsamtools",
+      "Version": "2.8.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/Rsamtools",
+      "Hash": "045a0a0f3adae792849b52494f36f71f"
     },
     "Rtsne": {
       "Package": "Rtsne",
@@ -376,11 +399,26 @@
       "Repository": "CRAN",
       "Hash": "e5959242d66cfe4de9116fdcec327f80"
     },
+    "Signac": {
+      "Package": "Signac",
+      "Version": "1.4.0.9002",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/Signac",
+      "Hash": "5bcd55ee1f0eede42e49cdefab091333"
+    },
     "SingleCellExperiment": {
       "Package": "SingleCellExperiment",
       "Version": "1.14.1",
       "Source": "Bioconductor",
       "Hash": "9c8ebd33b820f5f1a0c09e9d4e722820"
+    },
+    "SnowballC": {
+      "Package": "SnowballC",
+      "Version": "0.7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bc26e07c0d747fd287c370fe355e7b85"
     },
     "SparseM": {
       "Package": "SparseM",
@@ -478,11 +516,11 @@
     },
     "blaseRtools": {
       "Package": "blaseRtools",
-      "Version": "0.0.0.9012",
+      "Version": "0.0.0.9033",
       "Source": "Local",
       "RemoteType": "local",
-      "RemoteUrl": "/home/OSUMC.EDU/blas02/R/x86_64-pc-linux-gnu-library/4.1/blaseRtools",
-      "Hash": "95e4b0f209bdb04308ece2b437fbf3b3"
+      "RemoteUrl": "/usr/lib/R/site-library/blaseRtools",
+      "Hash": "b137238eb3f083aeda1d002328067274"
     },
     "blob": {
       "Package": "blob",
@@ -715,6 +753,13 @@
       "Repository": "CRAN",
       "Hash": "2dc413572eb42475179bfe0afabd2adf"
     },
+    "docopt": {
+      "Package": "docopt",
+      "Version": "0.7.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e9eeef7931ee99ca0093f3f20b88e09b"
+    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.0.7",
@@ -792,6 +837,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "77bd60a6157420d4ffa93b27cf6a58b8"
+    },
+    "fastmatch": {
+      "Package": "fastmatch",
+      "Version": "1.1-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dabc225759a2c2b241e60e42bf0e8e54"
     },
     "fitdistrplus": {
       "Package": "fitdistrplus",
@@ -898,6 +950,13 @@
       "Repository": "CRAN",
       "Hash": "dd68b9b215b2d3119603549a794003c3"
     },
+    "ggforce": {
+      "Package": "ggforce",
+      "Version": "0.3.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4c64a588b497f8c088e1d308ddd40bc6"
+    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.3.4.9000",
@@ -937,6 +996,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "81ccb8213ed592598210afd10c3a5936"
+    },
+    "ggseqlogo": {
+      "Package": "ggseqlogo",
+      "Version": "0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "461f7f16a39039e9ca8ea4b647c4094d"
     },
     "ggsignif": {
       "Package": "ggsignif",
@@ -1265,6 +1331,13 @@
       "Repository": "CRAN",
       "Hash": "b0edacc02f7a3dad41a1afc385e929f4"
     },
+    "lsa": {
+      "Package": "lsa",
+      "Version": "0.73.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6ce0ffe288e17b053c4604f3daa306cd"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.7.10",
@@ -1403,6 +1476,15 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2253a430965e222d11a2f9277cd34c2e"
+    },
+    "pander": {
+      "Package": "pander",
+      "Version": "0.6.4",
+      "Source": "Local",
+      "Repository": "CRAN",
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/pander",
+      "Hash": "ee4bbeebd2f4884a37a04da97c1d42aa"
     },
     "parallelly": {
       "Package": "parallelly",
@@ -1557,6 +1639,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "97def703420c8ab10d8f0e6c72101e02"
+    },
+    "qlcMatrix": {
+      "Package": "qlcMatrix",
+      "Version": "0.9.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "132c83536ad209678fbfcace91da1302"
     },
     "quantreg": {
       "Package": "quantreg",
@@ -1838,6 +1927,13 @@
       "Source": "Bioconductor",
       "Hash": "4649ab90fdcd3a3d9cade38f228970d7"
     },
+    "sparsesvd": {
+      "Package": "sparsesvd",
+      "Version": "0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c1f957f9c7e40091da380da53882ade2"
+    },
     "spatstat.core": {
       "Package": "spatstat.core",
       "Version": "2.2-0",
@@ -1903,10 +1999,10 @@
     },
     "survival": {
       "Package": "survival",
-      "Version": "3.2-11",
+      "Version": "3.2-13",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f4d706b25d640dbaeb56d9c9b6ce9a22"
+      "Hash": "6f0a0fadc63bc6570fe172770f15bbc4"
     },
     "sys": {
       "Package": "sys",
@@ -1978,6 +2074,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "11040d92c1144b4d8ca6470b0662c871"
+    },
+    "tweenr": {
+      "Package": "tweenr",
+      "Version": "1.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6cc663f970a529dbf776f11d5bcd1a2e"
     },
     "units": {
       "Package": "units",
