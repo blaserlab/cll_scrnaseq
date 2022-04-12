@@ -92,6 +92,14 @@
       "Repository": "CRAN",
       "Hash": "030aaec5bc6553f35347cbb1e70b1a17"
     },
+    "DESeq2": {
+      "Package": "DESeq2",
+      "Version": "1.32.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/home/OSUMC.EDU/blas02/R/x86_64-pc-linux-gnu-library/4.1/DESeq2",
+      "Hash": "36205cd1df54579d7bac68c434013151"
+    },
     "DelayedArray": {
       "Package": "DelayedArray",
       "Version": "0.18.0",
@@ -138,6 +146,12 @@
       "Version": "1.2.6",
       "Source": "Bioconductor",
       "Hash": "64835ce2e680bc34bd1de009121663f8"
+    },
+    "GenomicAlignments": {
+      "Package": "GenomicAlignments",
+      "Version": "1.28.0",
+      "Source": "Bioconductor",
+      "Hash": "6bcd3ef2875b2cf45c2b11171f34d7fc"
     },
     "GenomicRanges": {
       "Package": "GenomicRanges",
@@ -368,6 +382,13 @@
       "Source": "Bioconductor",
       "Hash": "a750488825efca8e08a30e8157821b9b"
     },
+    "SQUAREM": {
+      "Package": "SQUAREM",
+      "Version": "2021.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0cf10dab0d023d5b46a5a14387556891"
+    },
     "ScaledMatrix": {
       "Package": "ScaledMatrix",
       "Version": "1.0.0",
@@ -433,6 +454,13 @@
       "Source": "Bioconductor",
       "Hash": "74391cb9cefb4bcdffc38778fea7ecf3"
     },
+    "XML": {
+      "Package": "XML",
+      "Version": "3.99-0.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "59b7d0a3d18303ae30ba1246e77faa83"
+    },
     "XVector": {
       "Package": "XVector",
       "Version": "0.32.0",
@@ -445,6 +473,21 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4f57884290cc75ab22f4af9e9d4ca862"
+    },
+    "annotate": {
+      "Package": "annotate",
+      "Version": "1.70.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/home/OSUMC.EDU/blas02/R/x86_64-pc-linux-gnu-library/4.1/annotate",
+      "Hash": "627136be687a2c8a03fd485eaf00d146"
+    },
+    "ashr": {
+      "Package": "ashr",
+      "Version": "2.2-47",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c42c5b53d51fa85e3d4267b307f9e9e4"
     },
     "askpass": {
       "Package": "askpass",
@@ -514,13 +557,21 @@
       "Repository": "CRAN",
       "Hash": "b7d8d8ee39869c18d8846a184dd8a1af"
     },
+    "blaseRdata": {
+      "Package": "blaseRdata",
+      "Version": "0.0.0.9008",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/blaseRdata",
+      "Hash": "c7be6e4410b461d5989bc6012de7f1e5"
+    },
     "blaseRtools": {
       "Package": "blaseRtools",
-      "Version": "0.0.0.9033",
+      "Version": "0.0.0.9052",
       "Source": "Local",
       "RemoteType": "local",
       "RemoteUrl": "/usr/lib/R/site-library/blaseRtools",
-      "Hash": "b137238eb3f083aeda1d002328067274"
+      "Hash": "afdc71d643339aa7e897ed58ce6e7641"
     },
     "blob": {
       "Package": "blob",
@@ -795,6 +846,13 @@
       "Repository": "CRAN",
       "Hash": "bb0eec2fe32e88d9e2836c2f73ea2077"
     },
+    "etrunct": {
+      "Package": "etrunct",
+      "Version": "0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d1cdcd7d3ee4de411b7a29877a5e322a"
+    },
     "evaluate": {
       "Package": "evaluate",
       "Version": "0.14",
@@ -844,6 +902,14 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "dabc225759a2c2b241e60e42bf0e8e54"
+    },
+    "fgsea": {
+      "Package": "fgsea",
+      "Version": "1.20.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/usr/lib/R/site-library/fgsea",
+      "Hash": "6ed28ee62422bef1a4892adadba98a8e"
     },
     "fitdistrplus": {
       "Package": "fitdistrplus",
@@ -935,6 +1001,22 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "465ccb84427f5fe2c54f8620666db131"
+    },
+    "genefilter": {
+      "Package": "genefilter",
+      "Version": "1.74.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/home/OSUMC.EDU/blas02/R/x86_64-pc-linux-gnu-library/4.1/genefilter",
+      "Hash": "3a6dcafe393669a31f65d0813a8540c8"
+    },
+    "geneplotter": {
+      "Package": "geneplotter",
+      "Version": "1.70.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/home/OSUMC.EDU/blas02/R/x86_64-pc-linux-gnu-library/4.1/geneplotter",
+      "Hash": "e7f9656cae0ca8be1e2125acc8dc8f82"
     },
     "generics": {
       "Package": "generics",
@@ -1194,6 +1276,13 @@
       "Repository": "CRAN",
       "Hash": "7b1f856410253d56ea67ad808f7cdff6"
     },
+    "invgamma": {
+      "Package": "invgamma",
+      "Version": "1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d124cd1623454d8aeaaec5d67cf1d146"
+    },
     "irlba": {
       "Package": "irlba",
       "Version": "2.3.3",
@@ -1331,6 +1420,13 @@
       "Repository": "CRAN",
       "Hash": "b0edacc02f7a3dad41a1afc385e929f4"
     },
+    "locfit": {
+      "Package": "locfit",
+      "Version": "1.5-9.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "760b5b542e8435237d1b3c253bfe18e7"
+    },
     "lsa": {
       "Package": "lsa",
       "Version": "0.73.2",
@@ -1407,6 +1503,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "eaee7d2a6f3ed4491df868611cb064cc"
+    },
+    "mixsqp": {
+      "Package": "mixsqp",
+      "Version": "0.3-43",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e1b117daee4dfaebad99ab9a4606dd5d"
     },
     "modelr": {
       "Package": "modelr",
@@ -2074,6 +2177,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "11040d92c1144b4d8ca6470b0662c871"
+    },
+    "truncnorm": {
+      "Package": "truncnorm",
+      "Version": "1.0-8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "cc8b5bfa01c930ccb56d3051e515fbd8"
     },
     "tweenr": {
       "Package": "tweenr",

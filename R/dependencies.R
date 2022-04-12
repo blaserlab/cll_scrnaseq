@@ -7,21 +7,25 @@
 
 # blaseRtools and additional dependencies you may have to install since they are not recognized by renv::init
 # renv::install("/usr/lib/R/site-library/blaseRtools")
+# renv::install("/usr/lib/R/site-library/blaseRdata")
+# renv::install("/usr/lib/R/site-library/fgsea")
 
 # load core packages for the analysis
-library("blaseRtools")
-library("tidyverse")
-library("monocle3")
-library("circlize")
-library("ComplexHeatmap")
-library("lazyData")
-library("cowplot")
-library("RColorBrewer")
-library("ggrepel")
-library("ggpubr")
-library("rstatix")
-library("pander")
-library("Rcpp")
+suppressPackageStartupMessages(library("blaseRtools"))
+suppressPackageStartupMessages(library("blaseRdata"))
+suppressPackageStartupMessages(library("tidyverse"))
+suppressPackageStartupMessages(library("monocle3"))
+suppressPackageStartupMessages(library("circlize"))
+suppressPackageStartupMessages(library("ComplexHeatmap"))
+suppressPackageStartupMessages(library("lazyData"))
+suppressPackageStartupMessages(library("cowplot"))
+suppressPackageStartupMessages(library("RColorBrewer"))
+suppressPackageStartupMessages(library("ggrepel"))
+suppressPackageStartupMessages(library("ggpubr"))
+suppressPackageStartupMessages(library("rstatix"))
+suppressPackageStartupMessages(library("pander"))
+suppressPackageStartupMessages(library("Rcpp"))
+
 # uncomment and use the following to install or update the data package---------------------------------------
 bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
 
