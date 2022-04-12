@@ -1,7 +1,7 @@
 theme_set(theme_cowplot(font_size = 10))
 
-network_out <- "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/figs/source"
-network_tables <- "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/tables"
+network_out <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
+network_tables <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
 
 # graphical parameters####
 theme_set(theme_cowplot(font_size = 10))

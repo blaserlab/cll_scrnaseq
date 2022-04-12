@@ -5,10 +5,7 @@
 # uncomment and run to restore packages from the lock file (for example in new installation)
 #renv::restore()
 
-# blaseRtools and additional dependencies you may have to install since they are not recognized by renv::init
-# renv::install("/usr/lib/R/site-library/blaseRtools")
-# renv::install("/usr/lib/R/site-library/blaseRdata")
-# renv::install("/usr/lib/R/site-library/fgsea")
+# blaseRtemplates::easy_install()
 
 # load core packages for the analysis
 suppressPackageStartupMessages(library("blaseRtools"))
@@ -27,7 +24,7 @@ suppressPackageStartupMessages(library("pander"))
 suppressPackageStartupMessages(library("Rcpp"))
 
 # uncomment and use the following to install or update the data package---------------------------------------
-bb_renv_datapkg(path = "~/network/X/Labs/Blaser/cll_scrnaseq_manuscript/datapkg")
+bb_renv_datapkg(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
 
 # project data-------------------------------------
 # run once to load, run again to unload
