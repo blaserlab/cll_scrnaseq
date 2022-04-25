@@ -24,7 +24,7 @@ suppressPackageStartupMessages(library("pander"))
 suppressPackageStartupMessages(library("Rcpp"))
 
 # uncomment and use the following to install or update the data package---------------------------------------
-blaseRtemplates::bb_renv_datapkg(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
+bb_renv_datapkg(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
 
 # project data-------------------------------------
 # run once to load, run again to unload
