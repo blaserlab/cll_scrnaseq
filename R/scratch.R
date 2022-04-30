@@ -98,3 +98,11 @@ model <- lm(formula = log2_sample_mut_pct ~ del17p,
             data = sample_mut_table)
 summary(model)
 warnings()
+
+data <- renv::status()
+str(data$library$Packages$waldo)
+str(data$lockfile$Packages$waldo)
+renv:::renv_lockfile_diff_record(data$library$Packages$waldo, data$lockfile$Packages$waldo)
+
+renv::revert()
+renv::snapshot()
