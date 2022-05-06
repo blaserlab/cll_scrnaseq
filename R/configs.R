@@ -1,7 +1,15 @@
-theme_set(theme_cowplot(font_size = 10))
+# conflicts ---------------------------------------------------------------
+# resolve conflicting function names here
 
-network_out <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
-network_tables <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+conflict_prefer("select", "dplyr")
+conflict_prefer("rename", "dplyr")
+conflict_prefer("count", "dplyr")
+
+
+# analysis configurations -------------------------------------------------
+# use this section to set graphical themes, color palettes, etc.
 
 # graphical parameters####
 theme_set(theme_cowplot(font_size = 10))
@@ -30,8 +38,17 @@ summarybox_geom <- "crossbar"
 # 3 color heatmap
 heatmap_3_colors <- c("#313695","white","#A50026")
 
-# unmask
-filter <- dplyr::filter
-select <- dplyr::select
-rename <- dplyr::rename
-count <- dplyr::count
+network_out <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
+network_tables <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
+
+
+# source local configs ----------------------------------------------------
+# these are sourced after main configs and will overwrite duplicate entries if
+# present. The file local_configs.R is ignored by git and so is useful for user-
+# specific configurations such as output directories or formatting.
+
+fs::file_create("R/local_configs.R") # will not overwrite
+
+source("R/local_configs.R")
+
+
