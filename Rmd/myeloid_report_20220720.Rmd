@@ -1,0 +1,73 @@
+---
+title: "Myeloid Cell Report"
+author: "Brad Blaser"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center", message = FALSE, warning = FALSE, error = FALSE, dev = "pdf")
+source(here::here("R/dependencies.R"))
+source(here::here("R/configs.R"))
+source(here::here("R/myeloid_analysis.R"))
+```
+
+## Intro
+
+Here we are tracking down BTK mutation in myeloid cells (mainly monocytes).
+
+We have a number of ways to identify celltypes.  What I have done here is used the intersection of two methods:  1. partition-based clustering using Monocle tools and 2. automated cell type labels using Seurat.  Seurat provides better resolution into well-defined cell types but can make some off-target assignments, so we can select some Monocle clusters to filter out these outliers.
+
+## Myeloid celltypes and gene visualizations
+
+Here are the myeloid cell clusters, labeled using the Seurat cell labels.
+
+```{r, fig.height=4.0, fig.width=4.75}
+myeloid_seurat_cluster_umap
+```
+
+Priya provided a list of genes to define myeloid supopulations.
+
+Please remember that I need to use Gene Names for this type of thing and not protein name or CD designation if that isn't the same as the gene name.  So for example CD11b becomes ITGAM.  Please in the future just convert these before you send them to me.
+
+```{r}
+myeloid_genebubbles
+```
+Priya's markers do a good job of discriminating between the celltypes.
+
+## BTK Mutation Analysis
+
+Here are the cells according to the assigned BTK status:
+
+```{r, fig.height=2.75, fig.width=7.5}
+myeloid_btk_umap
+```
+
+Bottom line is that there are very few monocytes identified as "btk mutant".  Here's how few:
+
+```{r}
+pander(btk_breakdown_tbl, caption = "BTK Mutation by Seurat Celltype")
+```
+
+These numbers include all sample types and timepoints.  We only ran this analysis on the BTK cohort, not the MRD cohort.  Here is the breakdown by Seurat celltype and timepoint:
+
+```{r}
+pander(btk_timepoint_breakdown_tbl, caption = "BTK Mutation by Seurat Celltype and Timepoint")
+```
+
+## Conclusion
+
+The general approach here is to define celltypes according to transcriptional state and then determine how cells are distributed between these states according to class (e.g. WT or mutant).  Here we have only 9 mutant cells, hundreds of WT cells and thousands without any type.  So we can't be confident any differences in cell state distribution aren't by chance.  However as the basis for a hypothesis, we could note that BTK mutant cells are relatively twice as common in CD14 monos as CD16 monos.  By and large they are seen in the relapse setting as you would expect.  
+
+This is potentially interesting since ibrutinib modifies monocyte transcriptional state.  CXCL8 is one of the top genes that gets turned off by ibrutinib.  We have data in THP-1 and zebrafish on this.  CXCL8 is a top marker in the CD14 monocytes here as you see above.  It turns on a bunch of oncogenic and drug resistance programs.  
+
+At this point we need to see if we can dig up more mutant cells from the data.  James, that is your deal with Thomas.  Priya I think should make a THP-1 cell line with the C481S mutation and treat it with ibrutinib and do RNA seq or just qpcr for CXCL8 like we did in our paper.  I'll try mapping expression of cxcl8 target genes by our next meeting.
+
+Happy to discuss more.  
+
+Thanks
+
+Brad
+
+
+

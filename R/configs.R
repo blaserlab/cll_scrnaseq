@@ -47,8 +47,8 @@ network_tables <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manu
 # present. The file local_configs.R is ignored by git and so is useful for user-
 # specific configurations such as output directories or formatting.
 
-fs::file_create("R/local_configs.R") # will not overwrite
+fs::file_create(here::here("R/local_configs.R")) # will not overwrite)
 
-source("R/local_configs.R")
+source(here::here("R/local_configs.R"))
 
 

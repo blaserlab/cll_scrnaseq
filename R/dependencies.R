@@ -1,11 +1,6 @@
 # set up the renv and repair with snapshot if needed
-# renv::init(bioconductor = TRUE)
-# renv::snapshot()
 
-# uncomment and run to restore packages from the lock file (for example in new installation)
-#renv::restore()
-
-# blaseRtemplates::easy_install()
+# blaseRtemplates::easy_install("ggrastr", "link_from_cache")
 
 # load core packages for the analysis
 suppressPackageStartupMessages(library("conflicted"))
@@ -23,6 +18,7 @@ suppressPackageStartupMessages(library("ggpubr"))
 suppressPackageStartupMessages(library("rstatix"))
 suppressPackageStartupMessages(library("pander"))
 suppressPackageStartupMessages(library("Rcpp"))
+suppressPackageStartupMessages(library("ggrastr"))
 
 # uncomment and use the following to install or update the data package---------------------------------------
 blaseRtemplates::bb_renv_datapkg(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
