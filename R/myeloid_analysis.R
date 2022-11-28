@@ -1,5 +1,6 @@
 # make a subset CDS for the myeloid analysis
 # this is the intersection of seurat assignments and monocle clustering
+SingleCellExperiment::mainExpName(cds_main) <- "Gene Expression"
 cds_myeloid <- filter_cds(cds_main, 
                           cells = bb_cellmeta(cds_main) |> 
                             filter(seurat_celltype_l2 %in% c("CD14 Mono", "CD16 Mono", "cDC1", "cDC2", "pDC")) |> 
@@ -51,4 +52,18 @@ btk_timepoint_breakdown_tbl <- bb_cellmeta(cds_myeloid) |>
               values_fill = 0) |> 
   mutate(percent_mutant = mutant/(WT + mutant) * 100)
   
-                
+
+bb_cellmeta(cds_myeloid) |> glimpse()
+
+model_data <- bb_cellmeta(cds_myeloid) |> 
+  count(sample, patient, timepoint, seurat_celltype_l2, btk_type) |>
+  filter(btk_type != "no_type") |> 
+  pivot_wider(names_from = btk_type, 
+              values_from = n,
+              values_fill = 0) |> 
+  mutate(percent_mutant= mutant/(WT+mutant) * 100)
+
+
+lme_fit <- lmerTest::lmer(formula = percent_mutant ~ timepoint + seurat_celltype_l2 + (1|patient), data = model_data)
+
+summary(lme_fit)
