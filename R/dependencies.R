@@ -1,5 +1,3 @@
-blaseRtemplates::install_one_package("lmerTest", "link_from_cache")
-
 # load core packages for the analysis
 suppressPackageStartupMessages(library("conflicted"))
 suppressPackageStartupMessages(library("blaseRtools"))
