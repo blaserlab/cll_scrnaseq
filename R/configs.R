@@ -38,8 +38,8 @@ summarybox_geom <- "crossbar"
 # 3 color heatmap
 heatmap_3_colors <- c("#313695","white","#A50026")
 
-network_out <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
-network_tables <- "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
+network_out <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
+network_tables <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
 
 
 # source local configs ----------------------------------------------------

@@ -21,5 +21,5 @@ suppressPackageStartupMessages(library("multilevelmod"))
 
 
 # uncomment and use the following to install or update the data package---------------------------------------
-blaseRtemplates::project_data(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
+blaseRtemplates::project_data(path = "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
 

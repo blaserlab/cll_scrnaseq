@@ -1,9 +1,8 @@
 # global umap density faceted--------------------------------
 umap_density <- 
   bb_var_umap(
-    cds = cds_main[,colData(cds_main)$partition_assignment == "B"],
-    var = "log_local_n",
-    # var = "density",
+    obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
+    var = "density",
     sample_equally = TRUE,
     cell_size = 1,
     nbin = 100,
@@ -14,10 +13,8 @@ umap_density <-
   ) +
   theme(panel.background = element_rect(color = "grey80")) +
   theme(legend.justification = "center") +
-  labs(color = "Log10(Local Cells)")
-  # labs(color = "Cell\nDensity")
+  labs(color = "Cell\nDensity")
 umap_density
-
 
 # # volcano plot MRD1 vs BTK cluster----------------------------------------
 # genes_to_highlight_MRD1_BTK <- c("FBLN5","PLCB1", "TAL2", "MIR155HG")
@@ -176,6 +173,28 @@ volcano_BTK_bcells
 
 # module heatmap-----------------------------------------------------
 
+#annotation here
+module_heatmap_anno_df <- data.frame(row.names = colnames(agg_mat_bcells_type_timepoint),
+           timepoint_merged = case_when(str_detect(colnames(agg_mat_bcells_type_timepoint), "baseline") ~ "baseline",
+                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "btk_clone") ~ "3yrs|btk_clone",
+                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "3yrs") ~ "3yrs|btk_clone",
+                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "5yrs") ~ "5yrs|relapse",
+                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "relapse") ~ "5yrs|relapse"))
+module_heatmap_anno_df$timepoint_merged <- factor(module_heatmap_anno_df$timepoint_merged, levels = c("baseline", "3yrs|btk_clone", "5yrs|relapse"))
+module_heatmap_anno_df$timepoint_merged
+module_heatmap_anno <- ComplexHeatmap::HeatmapAnnotation(
+  df = module_heatmap_anno_df, 
+  which = "column",
+  col = list(timepoint_merged = c("baseline" = "white", 
+                                  "3yrs|btk_clone" = "grey80", 
+                                  "5yrs|relapse" = "black")),
+  border = TRUE, 
+  gp = gpar(col = "black"),
+  annotation_label = "Timepoint",
+  annotation_legend_param = list(border = "black",
+                                 title = "Timepoint"))
+
+
 col_fun_heatmap_bcells <- 
   colorRamp2(
     breaks = c(min(agg_mat_bcells_type_timepoint),
@@ -192,11 +211,11 @@ module_heatmap_bcells <-
             column_split = c(rep("BTK", times = 3), rep("MRD", times = 3)),
             col = col_fun_heatmap_bcells,
             row_names_gp = gpar(fontsize = 10),
-            column_names_gp = gpar(fontsize = 10),
             column_dend_height = unit(3,"mm"), 
-            row_dend_width = unit(3,"mm")
-            )
-  , padding = unit(c(2,5,2,15),"mm")))# bltr
+            row_dend_width = unit(3,"mm"),
+            bottom_annotation = module_heatmap_anno, 
+            show_column_names = F
+            ), merge_legend = TRUE), wrap = TRUE)
 plot_grid(module_heatmap_bcells)
 
 # subpop gene dotplot
@@ -237,13 +256,46 @@ dotplot_markers <- c(
 
 
 # subpopulation heatmap---------------------------------------------------------------
+
+# show top specific genes for subclusters -------------------------------------
+dotplot_markers <- c(
+  "FCER2",
+  "TCL1A",
+  "BTG1",
+  "CD52",
+  "NFKBIA",
+  "DUSP1",
+  "LTB",
+  "FOS",
+  "JUN",
+  "S100A6",
+  "HLA-A",
+  "HLA-B",
+  "HLA-C",
+  "HLA-E",
+  "HLA-DRA",
+  "HLA-DQA1",
+  "HLA-DMA",
+  # "MALAT1",
+  # "PIM3",
+  # "MAP3K8",
+  # "RELB",
+  "CNTNAP2",
+  "CXXC5",
+  # "ITGB1",
+  "RAC2",
+  "TXNIP"
+  # "KLF6"
+)
+
+
 subpop_top_markers_mat <- scale(t(as.matrix(aggregate_gene_expression(cds = cds_main[rowData(cds_main)$gene_short_name %in% (cds_main_bcell_subpop_top_markers %>% pull(gene_short_name)),
                                          colData(cds_main)$partition_assignment == "B"],
                           cell_group_df = 
                             colData(cds_main) %>%
                             as_tibble(rownames = "cell") %>%
                             filter(partition_assignment == "B") %>%
-                            select(cell, cell_group = leiden_assignment_binned),
+                            select(cell, cell_group = leiden_assignment_binned_renamed),
                           ))))
 
 new_colnames <- left_join(tibble(id = colnames(subpop_top_markers_mat)),
@@ -265,7 +317,7 @@ tm_anno <- columnAnnotation(link =  anno_mark(
   at = which(colnames(subpop_top_markers_mat) %in% dotplot_markers),
   labels = colnames(subpop_top_markers_mat)[colnames(subpop_top_markers_mat) %in% dotplot_markers],
   labels_gp = gpar(fontsize = 8),
-  padding = 2
+  padding = 1
 ))
 
 
@@ -289,7 +341,7 @@ normalized_leiden_counts <-
   colData(cds_main) %>%
   as_tibble() %>%
   filter(partition_assignment == "B") %>%
-  group_by(patient, leiden_assignment_binned, specimen, timepoint_merged, patient_type) %>%
+  group_by(patient, leiden_assignment_binned_renamed, specimen, timepoint_merged, patient_type) %>%
   summarise(n = n()) %>%
   left_join(colData(cds_main) %>%
               as_tibble() %>%
@@ -297,11 +349,11 @@ normalized_leiden_counts <-
               summarise(specimen_total = n())) %>%
   mutate(overall_total = nrow(colData(cds_main))) %>%
   mutate(normalized_count = n*overall_total/specimen_total/2) %>%
-  select(leiden_assignment_binned, specimen, timepoint_merged, patient_type, normalized_count)
+  select(leiden_assignment_binned_renamed, specimen, timepoint_merged, patient_type, normalized_count)
 
 cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
-  pivot_wider(names_from = leiden_assignment_binned, values_from = normalized_count, values_fill = 1) %>%
-  mutate(btk_to_other_ratio = BTK/(MRD2 + MRD1)) %>%
+  pivot_wider(names_from = leiden_assignment_binned_renamed, values_from = normalized_count, values_fill = 1) %>%
+  mutate(btk_to_other_ratio = (`CLL-like`)/(stressed + inflammatory)) %>%
   mutate(log2_ratio = log2(btk_to_other_ratio)) %>%
   ggplot(mapping = aes(x = patient_type, y = log2_ratio, color = patient_type, fill = patient_type)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
@@ -321,5 +373,8 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   ) +
   stat_compare_means(method = "wilcox", label = "p.signif", label.x.npc = "center", label.y = 16) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log2(BTK:\nMRD1+MRD2)")
+  labs(y = "log<sub>2</sub>(CLL-like:other)", x = "Patient Type") +
+  theme(axis.title.y.left = ggtext::element_markdown())
+cluster_proportion_ratio_plot
+
 

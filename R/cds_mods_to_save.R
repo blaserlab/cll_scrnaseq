@@ -1,0 +1,1 @@
+colData(cds_main)$leiden_assignment_binned_renamed <- recode(colData(cds_main)$leiden_assignment_binned, "BTK" = "CLL-like", "MRD1" = "inflammatory", "MRD2" = "stressed")
