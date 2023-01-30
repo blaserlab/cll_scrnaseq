@@ -1,6 +1,6 @@
 # global umap with partition labels ----------------------------------
 umap_partitions <- bb_var_umap(
-  cds = cds_main,
+  obj = cds_main,
   var = "partition_assignment",
   overwrite_labels = T,
   group_label_size = 4,

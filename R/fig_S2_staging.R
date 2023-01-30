@@ -6,4 +6,3 @@ subpop_umap_pt_timepoint_merged <-
   theme(panel.background = element_rect(color = "grey80"))
 subpop_umap_pt_timepoint_merged
 
-bb_cellmeta(cds_main) |> glimpse()

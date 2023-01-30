@@ -127,7 +127,59 @@ treg_pct_plot <-
   labs(y = "Percent Treg", x = NULL) +
   theme(legend.position = "none") +
   facet_wrap(facets = vars(timepoint_merged)) +
+  stat_summary(fun.data = blaseRtools::data_summary_mean_se, 
+               geom = "crossbar", 
+               width = 0.3, 
+               show.legend = FALSE) +
   stat_compare_means(method = "t.test",
                      label = "p.signif",
                      label.x.npc = 0.5) +
   theme(strip.background = element_blank())
+
+
+bb_cellmeta(cds_main) |> glimpse()
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")), "tcr_is_cancer", facet_by = c("value", "patient_type"), cols = vars(value), rows = vars(patient_type))
+
+bb_cellmeta(cds_main) |> filter(!is.na(tcr_is_cancer)) |> group_by(specimen, patient_type, timepoint_merged, tcr_is_cancer) |> summarise(n = n()) |> 
+  mutate(tcr_is_cancer_chr = ifelse(tcr_is_cancer, "cancer_related", "not_cancer_related")) |> 
+  select(-tcr_is_cancer) |> 
+  pivot_wider(names_from = tcr_is_cancer_chr, values_from = n, values_fill = 0) |> 
+  mutate(cancer_pct = cancer_related/(not_cancer_related + cancer_related)*100) |> 
+  ggplot(aes(x = patient_type, y = cancer_pct)) +
+  geom_jitter() +
+  facet_wrap(~timepoint_merged)
+
+
+
+shannon <- function(x) {
+  p <- x/sum(x)
+  -sum(p*log(p))
+}
+
+tcr_diversity_plot <- bb_cellmeta(cds_main) |> 
+  filter(!is.na(tcr_clone_copies)) |> 
+  group_by(specimen, tcr_clonotype_id) |> 
+  summarise(n = n()) |> 
+  group_by(specimen) |> 
+  summarize(diversity = shannon(n)) |> 
+  left_join(bb_cellmeta(cds_main) |> 
+              group_by(specimen, timepoint_merged, patient_type) |> 
+              summarise()) |> 
+  ggplot(aes(x = patient_type, y = diversity, color = patient_type, fill = patient_type)) +
+  geom_jitter(width = jitter_width,
+              size = jitter_size,
+              shape = jitter_shape) +
+  scale_color_manual(values = experimental_group_palette) +
+  scale_fill_manual(values = alpha(alpha = 0.4, colour = experimental_group_palette)) +
+  facet_wrap(~timepoint_merged) +
+  stat_summary(fun.data = blaseRtools::data_summary_mean_se, 
+               geom = "crossbar", 
+               width = 0.3, 
+               show.legend = FALSE) +
+  stat_compare_means(method = "t.test",
+                     label = "p.signif",
+                     label.x.npc = 0.5) 
+  
+
+
+
