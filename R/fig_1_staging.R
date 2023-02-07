@@ -377,4 +377,5 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   theme(axis.title.y.left = ggtext::element_markdown())
 cluster_proportion_ratio_plot
 
+module_enrichment$`Module 1`$res_table
 

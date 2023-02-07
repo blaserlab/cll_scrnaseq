@@ -17,6 +17,12 @@ map2_dfr(
   }
 ) %>% write_csv(str_glue("{network_tables}/module_go_term_enrichment.csv"))
 
+bind_rows(btk_enrich[[3]] |> mutate(subcluster = "CLL-like") |> relocate(subcluster), 
+          mrd1_enrich[[3]] |> mutate(subcluster = "inflammatory") |> relocate(subcluster), 
+          mrd2_enrich[[3]] |> mutate(subcluster = "stressed") |> relocate(subcluster)) |> 
+  write_csv(fs::path(network_tables, "subcluster_goterm_enrichment.csv"))
+
+
 
 # pseudobulk dge--------------------------
 
@@ -59,6 +65,7 @@ pseudobulk_MRD2_BTK[[2]] %>% write_csv(str_glue("{network_tables}/MRD2_v_BTK_clu
 # B cell subcluster top markers (not pseudobulk)--------------------
 
 cds_main_bcell_subpop_top_markers %>%
+  mutate(cell_group = recode(cell_group, "MRD1" = "inflammatory", "MRD2" = "stressed", "BTK" = "CLL-like")) |> 
   write_csv(str_glue("{network_tables}/bcell_subpop_top_markers.csv"))
 
 # T cell phenotype:  pseudobulk analsysis_--------------------------------------

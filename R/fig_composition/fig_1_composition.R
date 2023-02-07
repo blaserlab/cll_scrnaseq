@@ -1,5 +1,5 @@
-source("R/configs.R")
-source("R/fig_1_staging.R")
+# source("R/configs.R")
+# source("R/fig_1_staging.R")
 
 fig_1_top <-
   plot_grid(
@@ -44,7 +44,7 @@ fig_1 <-
 save_plot(
  plot = fig_1,
  # filename = "test.png",
- filename = str_glue("{network_out}/fig_1.png"),
+ filename = fs::path(network_out, "fig_1.png"),
  base_width = 7.5,
  base_height = 9.75
 )
