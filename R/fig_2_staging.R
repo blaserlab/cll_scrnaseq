@@ -107,7 +107,7 @@ treg_pct_plot <-
                      label.x.npc = 0.5) +
   theme(strip.background = element_blank())
 
-exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3")
+exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
 exh_bubdat <- bb_genebubbles(filter_cds(
   cds_main,
   cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
@@ -124,7 +124,7 @@ exh_genebub <- ggplot(exh_bubdat, aes(x = seurat_l2_leiden_consensus, y = gene_s
   labs(x = NULL, y = NULL) +
   theme(strip.background = element_blank()) +
   theme(axis.text.y = element_text(face = "italic"))
-
+exh_genebub
 
 
 shannon <- function(x) {
@@ -177,6 +177,7 @@ bb_var_umap(
 # Differential abundance  http://bioconductor.org/books/3.13/OSCA.multisample/differential-abundance.html
 leiden_consensus_counts <- bb_cellmeta(cds_main) |> 
   count(sample, seurat_l2_leiden_consensus) |> 
+  filter(seurat_l2_leiden_consensus %in% c("CD8 TEM", "CD4 TCM", "CD4 Naive", "Treg")) |>
   pivot_wider(names_from = "sample", values_from = "n", values_fill = 0) |> 
   bb_tbl_to_matrix()
 
@@ -188,18 +189,21 @@ res <- glmQLFTest(fit, coef=ncol(design))
 res_top_tags <- topTags(res, n = Inf)
 cluster_enrichment_barchart <- as_tibble(res_top_tags@.Data[[1]], rownames = "cluster") |> 
   mutate(enriched = ifelse(logFC > 0, "BTK", "MRD")) |> 
-  mutate(sig = case_when(FDR < 0.05 & FDR >= 0.01 ~ "*",
-                         FDR < 0.01 & FDR >= 0.001 ~ "**",
-                         FDR < 0.001 & FDR >= 0.0001 ~ "***",
-                         FDR >= 0.05 ~ ""
+  mutate(sig = case_when(PValue < 0.05 & PValue >= 0.01 ~ "*",
+                         PValue < 0.01 & PValue >= 0.001 ~ "**",
+                         PValue < 0.001 & PValue >= 0.0001 ~ "***",
+                         PValue >= 0.05 ~ ""
                          )) |> 
-  filter(cluster %in% c("CD8 TEM", "CD4 TCM", "CD4 Naive", "Treg")) |> 
+  # filter(cluster %in% c("CD8 TEM", "CD4 TCM", "CD4 Naive", "Treg")) |> 
   mutate(cluster = fct_reorder(cluster, logFC)) |> 
   ggplot(aes(x = cluster, y = logFC, color = enriched, fill = enriched, label = sig)) +
   geom_col() +
   labs(x = NULL, y = "Log-fold Enrichment BTK:MRD", color = NULL, fill = NULL) +
   geom_text(color = "black", nudge_y = 0.05) +
   theme(legend.position = "none")
+cluster_enrichment_barchart
 
-
-
+bb_var_umap(filter_cds(
+  cds_main,
+  cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
+), "density", facet_by = "patient")
