@@ -38,6 +38,22 @@ summarybox_geom <- "crossbar"
 # 3 color heatmap
 heatmap_3_colors <- c("#313695","white","#A50026")
 
+# variable colors
+
+pt_colors <- tibble(pt = paste0("cll_", 1:12), cols = brewer.pal(n = 12, name = "Paired")) |> deframe()
+
+partition_colors <- tibble(pa = unique(colData(cds_main)$partition_assignment), cols = brewer.pal(n = 8, name = "Set1")) |> deframe()
+
+timepoint_palette <- c("1" = brewer.pal(3, "YlGn")[1],
+                       "2" = brewer.pal(3, "YlGn")[2],
+                       "3" = brewer.pal(3, "YlGn")[3])
+
+# cds_mods
+colData(cds_main)$timepoint_merged_1 <- recode(colData(cds_main)$timepoint_merged, "baseline" = "1",
+                                               "3yrs|btk_clone" = "2",
+                                               "5yrs|relapse" = "3")
+
+
 network_out <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
 network_tables <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
 

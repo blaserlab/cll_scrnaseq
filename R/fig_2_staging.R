@@ -181,29 +181,29 @@ leiden_consensus_counts <- bb_cellmeta(cds_main) |>
   pivot_wider(names_from = "sample", values_from = "n", values_fill = 0) |> 
   bb_tbl_to_matrix()
 
-dge_list <- edgeR::DGEList(counts = leiden_consensus_counts, samples = bb_cellmeta(cds_main) |> group_by(specimen, patient_type, timepoint_merged) |> summarise())
-design <- model.matrix(~factor(timepoint_merged) + factor(patient_type, levels = c("MRD", "BTK")), dge_list$samples)
-dge_list <- estimateDisp(dge_list, design, trend="none")
-fit <- glmQLFit(dge_list, design, robust=TRUE, abundance.trend=FALSE)
-res <- glmQLFTest(fit, coef=ncol(design))
-res_top_tags <- topTags(res, n = Inf)
-cluster_enrichment_barchart <- as_tibble(res_top_tags@.Data[[1]], rownames = "cluster") |> 
-  mutate(enriched = ifelse(logFC > 0, "BTK", "MRD")) |> 
-  mutate(sig = case_when(PValue < 0.05 & PValue >= 0.01 ~ "*",
-                         PValue < 0.01 & PValue >= 0.001 ~ "**",
-                         PValue < 0.001 & PValue >= 0.0001 ~ "***",
-                         PValue >= 0.05 ~ ""
-                         )) |> 
-  # filter(cluster %in% c("CD8 TEM", "CD4 TCM", "CD4 Naive", "Treg")) |> 
-  mutate(cluster = fct_reorder(cluster, logFC)) |> 
-  ggplot(aes(x = cluster, y = logFC, color = enriched, fill = enriched, label = sig)) +
-  geom_col() +
-  labs(x = NULL, y = "Log-fold Enrichment BTK:MRD", color = NULL, fill = NULL) +
-  geom_text(color = "black", nudge_y = 0.05) +
-  theme(legend.position = "none")
-cluster_enrichment_barchart
-
-bb_var_umap(filter_cds(
-  cds_main,
-  cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
-), "density", facet_by = "patient")
+# dge_list <- edgeR::DGEList(counts = leiden_consensus_counts, samples = bb_cellmeta(cds_main) |> group_by(specimen, patient_type, timepoint_merged) |> summarise())
+# design <- model.matrix(~factor(timepoint_merged) + factor(patient_type, levels = c("MRD", "BTK")), dge_list$samples)
+# dge_list <- estimateDisp(dge_list, design, trend="none")
+# fit <- glmQLFit(dge_list, design, robust=TRUE, abundance.trend=FALSE)
+# res <- glmQLFTest(fit, coef=ncol(design))
+# res_top_tags <- topTags(res, n = Inf)
+# cluster_enrichment_barchart <- as_tibble(res_top_tags@.Data[[1]], rownames = "cluster") |> 
+#   mutate(enriched = ifelse(logFC > 0, "BTK", "MRD")) |> 
+#   mutate(sig = case_when(PValue < 0.05 & PValue >= 0.01 ~ "*",
+#                          PValue < 0.01 & PValue >= 0.001 ~ "**",
+#                          PValue < 0.001 & PValue >= 0.0001 ~ "***",
+#                          PValue >= 0.05 ~ ""
+#                          )) |> 
+#   # filter(cluster %in% c("CD8 TEM", "CD4 TCM", "CD4 Naive", "Treg")) |> 
+#   mutate(cluster = fct_reorder(cluster, logFC)) |> 
+#   ggplot(aes(x = cluster, y = logFC, color = enriched, fill = enriched, label = sig)) +
+#   geom_col() +
+#   labs(x = NULL, y = "Log-fold Enrichment BTK:MRD", color = NULL, fill = NULL) +
+#   geom_text(color = "black", nudge_y = 0.05) +
+#   theme(legend.position = "none")
+# cluster_enrichment_barchart
+# 
+# bb_var_umap(filter_cds(
+#   cds_main,
+#   cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
+# ), "density", facet_by = "patient")

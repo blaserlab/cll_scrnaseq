@@ -1,3 +1,5 @@
+
+
 # global umap density faceted--------------------------------
 umap_density <- 
   bb_var_umap(
@@ -377,5 +379,210 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   theme(axis.title.y.left = ggtext::element_markdown())
 cluster_proportion_ratio_plot
 
-module_enrichment$`Module 1`$res_table
+# heatmap of patient characteristics
+
+pt_char <- bb_cellmeta(cds_main) |>
+  group_by(
+    specimen,
+    patient,
+    patient_type,
+    timepoint_merged_1,
+    gender,
+    age_at_ibr_start,
+    IGHV_status,
+    complex_karyotype,
+    del17p,
+    del11q,
+    del13p,
+    tri12,
+    btk_clone_vaf_pct,
+    relapse_vaf_pct,
+    partition_assignment
+  ) |>
+  summarise(n = n()) |>
+  pivot_wider(names_from = partition_assignment,
+              values_from = n,
+              values_fill = 0) |>
+  ungroup()
+
+pt_char_mat <- pt_char |>
+  select(specimen, where(is.integer)) |>
+  bb_tbl_to_matrix() |>
+  apply(1, \(x) x / sum(x) * 100)
+
+{
+pt_char_anno_df <- pt_char |> 
+  select(-where(is.integer)) |> 
+  mutate(age_at_ibr_start = as.numeric(age_at_ibr_start)) |>
+  mutate(btk_clone_vaf_pct = as.numeric(btk_clone_vaf_pct)) |> 
+  mutate(relapse_vaf_pct = as.numeric(relapse_vaf_pct)) |> 
+  as.data.frame()
+rownames(pt_char_anno_df) <- pt_char_anno_df$specimen
+pt_char_anno_df$specimen <- NULL
+}
+waldo::compare(rownames(pt_char_anno_df), colnames(pt_char_mat))
+
+col_fun_pt_age <-
+  circlize::colorRamp2(breaks = c(
+    min(as.numeric(pt_char$age_at_ibr_start)),
+    max(as.numeric(pt_char$age_at_ibr_start))
+  ),
+  colors = c("transparent", "midnightblue"))
+
+col_fun_btk_clone_vaf <-
+  circlize::colorRamp2(breaks = c(
+    min(as.numeric(pt_char$btk_clone_vaf_pct), na.rm = TRUE),
+    max(as.numeric(pt_char$btk_clone_vaf_pct), na.rm = TRUE)
+  ),
+  colors = c("transparent", "forestgreen"))
+
+col_fun_relapse_vaf <-
+  circlize::colorRamp2(breaks = c(
+    min(as.numeric(pt_char$relapse_vaf_pct), na.rm = TRUE),
+    max(as.numeric(pt_char$relapse_vaf_pct), na.rm = TRUE)
+  ),
+  colors = c("transparent", "darkmagenta"))
+
+pt_char_anno <- ComplexHeatmap::HeatmapAnnotation(df = pt_char_anno_df, 
+                                                  which = "column",
+                                                  col = list(IGHV_status = c("M" = "black", "U" = "white"),
+                                                             complex_karyotype = c("yes" = "black", "no" = "white", "unknown" = "grey80"),
+                                                             timepoint_merged_1 = timepoint_palette,
+                                                             del17p = c(`FALSE` = "white", `TRUE` = "black"),
+                                                             del11q = c(`FALSE` = "white", `TRUE` = "black"),
+                                                             gender = c("F" = "pink", "M" = "blue"),
+                                                             del13p = c(`FALSE` = "white", `TRUE` = "black"),
+                                                             tri12 = c(`FALSE` = "white", `TRUE` = "black"),
+                                                             patient_type = experimental_group_palette, 
+                                                             patient = pt_colors,
+                                                             age_at_ibr_start = col_fun_pt_age,
+                                                             btk_clone_vaf_pct = col_fun_btk_clone_vaf,
+                                                             relapse_vaf_pct = col_fun_relapse_vaf
+                                                             
+                                                             ))
+
+col_fun_pt_char <- circlize::colorRamp2(breaks = c(0,100), colors = c("transparent", "red3"))
+
+
+
+pt_char_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(
+  pt_char_mat,
+  col = col_fun_pt_char,
+  name = "Percent\nof Sample",
+  column_dend_side = "bottom",
+  show_column_names = FALSE,
+  top_annotation = pt_char_anno
+  
+)), wrap = TRUE, width = unit(5, "in"), height = unit(5, "in")) 
+
+save_plot(filename = fs::path(network_out, "pt_char_hm.png"), plot_grid(pt_char_hm), base_width = 10, base_height = 7.5)
+
+#  barchart by patient type
+
+bb_cellmeta(cds_main) |> count(patient_type)
+
+cell_composition_barchart <- bb_cellmeta(cds_main) |>
+  group_by(patient_type) |> 
+  slice_sample(n = 25101) |> 
+  ungroup() |> 
+  count(patient_type, timepoint_merged, partition_assignment) |> 
+  pivot_wider(names_from = "partition_assignment", values_from = n, values_fill = 0) |> 
+  mutate(timepoint_merged = recode(timepoint_merged, "baseline" = 1L, "3yrs|btk_clone" =  2L, "5yrs|relapse" = 3L)) |> 
+  pivot_longer(-c(patient_type, timepoint_merged), names_to = "partition_assignment", values_to = "count") |> 
+  group_by(partition_assignment, timepoint_merged) |> 
+  mutate(pct = count/sum(count)*100) |> 
+  ggplot(aes(x = partition_assignment, y = pct, fill = patient_type)) +
+  geom_col() +
+  facet_wrap(~timepoint_merged, scales = "free_x")
+
+# save_plot(cell_composition_barchart, filename = fs::path(network_out, "cell_comp_barchart.png"), base_width = 10, base_height = 7.5)
+
+# module expression heatmaps-----------------------
+
+
+mod_expr_hms <-
+  map(.x = list(
+    unique(colData(cds_main)$partition_assignment),
+    "B",
+    "T",
+    "NK",
+    "Mono"),
+      .f = \(
+        x,
+        dat = cds_main,
+        egp = experimental_group_palette,
+        tp = timepoint_palette,
+        pc = partition_colors
+      ) {
+        dat <-
+          filter_cds(dat, cells = bb_cellmeta(dat) |> filter(partition_assignment %in% x))
+        module_mat <- bb_aggregate(
+          dat,
+          gene_group_df = bb_rowmeta(dat) |> select(feature_id, module),
+          cell_group_df = bb_cellmeta(dat) |> select(
+            cell_id,
+            patient_type,
+            timepoint_merged_1,
+            partition_assignment
+          ) |> mutate(
+            var = paste(
+              patient_type,
+              timepoint_merged_1,
+              partition_assignment,
+              sep = "_"
+            )
+          ) |>
+            select(cell_id, var)
+        )
+        
+        {
+          module_anno_df <- tibble(var = colnames(module_mat)) |>
+            separate(
+              col = "var",
+              sep = "_",
+              into = c(
+                "patient_type",
+                "timepoint_merged_1",
+                "partition_assignment"
+              )
+            ) |>
+            as.data.frame()
+          rownames(module_anno_df) <- module_anno_df$var
+          module_anno_df$var <- NULL
+        }
+        
+        module_anno <-
+          ComplexHeatmap::HeatmapAnnotation(
+            df = module_anno_df,
+            col = list(
+              patient_type = egp,
+              timepoint_merged_1 = tp,
+              partition_assignment = pc
+            )
+          )
+        
+        grid.grabExpr(draw(
+          ComplexHeatmap::Heatmap(
+            as.matrix(module_mat),
+            name = "Module\nExpression",
+            top_annotation = module_anno,
+            show_column_names = FALSE,
+            column_dend_side = "bottom",
+            row_title = "Module", 
+            cluster_columns = ifelse(length(x) == 1, FALSE, TRUE)
+          )
+        ), wrap = TRUE)
+        
+        
+      }) |>
+  set_names(c("all", "B", "T", "NK", "Mono"))
+  # set_names("Mono")
+
+plot_grid(mod_expr_hms$B)
+plot_grid(mod_expr_hms$all)
+walk2(.x = mod_expr_hms,
+      .y = names(mod_expr_hms),
+     .f = \(x, y, out = network_out) save_plot(plot = x, filename = fs::path(out, paste0(y, "_module_expr.png")), base_height = 7.5, base_width = 10))
+
+names(mod_expr_hms[1])
 
