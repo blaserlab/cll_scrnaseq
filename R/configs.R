@@ -18,7 +18,9 @@ theme_set(theme_cowplot(font_size = 10))
 # show_col(pal_npg("nrc")(10))
 experimental_group_palette <- c(
   "MRD" = "#3C5488",
-  "BTK" = "#DC0000"
+  "BTK" = "#DC0000",
+  "responsive" = "#3C5488",
+  "resistant" = "#DC0000"
 )
 
 jitter_alpha_fill <- 0.2

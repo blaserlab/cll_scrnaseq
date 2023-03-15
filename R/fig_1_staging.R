@@ -1,4 +1,5 @@
-
+colData(cds_main)$patient_type1 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "responsive")
+bb_cellmeta(cds_main) |> glimpse()
 
 # global umap density faceted--------------------------------
 umap_density <- 
@@ -8,9 +9,9 @@ umap_density <-
     sample_equally = TRUE,
     cell_size = 1,
     nbin = 100,
-    facet_by = c("patient_type", "timepoint_merged"),
-    rows = vars(patient_type), 
-    cols = vars(timepoint_merged),
+    facet_by = c("patient_type1", "timepoint_merged_1"),
+    rows = vars(patient_type1), 
+    cols = vars(timepoint_merged_1),
     foreground_alpha = 0.6
   ) +
   theme(panel.background = element_rect(color = "grey80")) +
@@ -18,6 +19,17 @@ umap_density <-
   labs(color = "Cell\nDensity")
 umap_density
 
+# subcluster_umap-----------------------------------
+umap_subcluster <- 
+  bb_var_umap(
+    obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
+    var = "leiden_assignment_binned_renamed",
+    cell_size = 1,
+    foreground_alpha = 0.1,
+    overwrite_labels = TRUE
+  ) 
+umap_subcluster
+bb_cellmeta(cds_main) |> glimpse()
 # # volcano plot MRD1 vs BTK cluster----------------------------------------
 # genes_to_highlight_MRD1_BTK <- c("FBLN5","PLCB1", "TAL2", "MIR155HG")
 # 
@@ -161,7 +173,7 @@ volcano_BTK_bcells <-
   theme(legend.position = "none") +
   scale_color_manual(values = c("grey80", "#DC0000")) +
   scale_fill_manual(values = c("transparent", "#DC0000")) +
-  labs(caption = "\U21D0 Up in baseline\nUp in BTK clone \U21D2", title = NULL)+
+  labs(caption = "\U21D0 Up in timepoint 1\nUp in timepoint 2 \U21D2", title = NULL)+
   theme(plot.caption.position = "panel") +
   theme(plot.caption = element_text(hjust = 0.5)) +
   theme(plot.title = element_text(hjust = 0.5)) +  
@@ -176,25 +188,29 @@ volcano_BTK_bcells
 # module heatmap-----------------------------------------------------
 
 #annotation here
-module_heatmap_anno_df <- data.frame(row.names = colnames(agg_mat_bcells_type_timepoint),
-           timepoint_merged = case_when(str_detect(colnames(agg_mat_bcells_type_timepoint), "baseline") ~ "baseline",
-                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "btk_clone") ~ "3yrs|btk_clone",
-                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "3yrs") ~ "3yrs|btk_clone",
-                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "5yrs") ~ "5yrs|relapse",
-                                        str_detect(colnames(agg_mat_bcells_type_timepoint), "relapse") ~ "5yrs|relapse"))
-module_heatmap_anno_df$timepoint_merged <- factor(module_heatmap_anno_df$timepoint_merged, levels = c("baseline", "3yrs|btk_clone", "5yrs|relapse"))
+col.order <- c("BTK_baseline", "BTK_btk_clone", "BTK_relapse", "MRD_baseline", "MRD_3yrs", "MRD_5yrs")
+module_heatmap_anno_df <- data.frame(row.names = colnames(agg_mat_bcells_type_timepoint[,col.order]))
+module_heatmap_anno_df$timepoint_merged <- recode(rownames(module_heatmap_anno_df), 
+                                                  "BTK_baseline" = "1",
+                                                  "BTK_btk_clone" = "2",
+                                                  "BTK_relapse" = "3",
+                                                  "MRD_baseline" = "1",
+                                                  "MRD_3yrs" = "2",
+                                                  "MRD_5yrs" = "3")
 module_heatmap_anno_df$timepoint_merged
 module_heatmap_anno <- ComplexHeatmap::HeatmapAnnotation(
   df = module_heatmap_anno_df, 
   which = "column",
-  col = list(timepoint_merged = c("baseline" = "white", 
-                                  "3yrs|btk_clone" = "grey80", 
-                                  "5yrs|relapse" = "black")),
+  col = list(timepoint_merged = c("1" = "white", 
+                                  "2" = "grey80", 
+                                  "3" = "black")),
   border = TRUE, 
   gp = gpar(col = "black"),
   annotation_label = "Timepoint",
+  annotation_name_gp = gpar(fontsize = 8), 
   annotation_legend_param = list(border = "black",
-                                 title = "Timepoint"))
+                                 title = "Timepoint",
+                                 title_gp = gpar(fontsize = 9, fontface = "bold")))
 
 
 col_fun_heatmap_bcells <- 
@@ -205,20 +221,74 @@ col_fun_heatmap_bcells <-
     colors = heatmap_3_colors
   )
 
-
 module_heatmap_bcells <-
   grid.grabExpr(draw(
-    Heatmap(matrix = agg_mat_bcells_type_timepoint,
+    Heatmap(matrix = agg_mat_bcells_type_timepoint[, col.order],
             name = "Module\nExpression",
-            column_split = c(rep("BTK", times = 3), rep("MRD", times = 3)),
+            column_split = c(rep("resistant", times = 3), rep("responsive", times = 3)),
             col = col_fun_heatmap_bcells,
+            row_names_gp = gpar(fontsize = 8),
+            column_dend_height = unit(3,"mm"), 
+            row_dend_width = unit(3,"mm"),
+            bottom_annotation = module_heatmap_anno, 
+            show_column_names = F,
+            cluster_columns = FALSE, 
+            column_title_gp = gpar(fontsize = 9),
+            heatmap_legend_param = list(title_gp = gpar(fontsize = 9, fontface = "bold"))
+              ), merge_legend = TRUE), wrap = TRUE)
+
+# BCR signature heatmap, made in same fashion as module heatmap ---------------------
+
+bcr_signature_genes <- c("NFATC2", "SOS2", "PPP3CA", "GSK3B", "HRASLS2", "PPP3CC", "CARD11", "IKBKB", "SOS1", "MALT1", "NFATC4", "PPP3CB", "RAF1", "RAC2", "LILRB3", "MAP2K1", "CD19", "CD22", "CD72", "CD79A", "CD79B", "CD80", "CD81", "GRB2", "BTK", "BCL2", "BCL10", "BIRC3", "BIRC5", "AKT3")
+bcr_signature_genes_mat <- bb_aggregate(obj = filter_cds(cds_main, 
+                              cells = bb_cellmeta(cds_main) |> 
+                                filter(partition_assignment == "B"),
+                              genes = bb_rowmeta(cds_main) |> 
+                                filter(gene_short_name %in% bcr_signature_genes)),
+             cell_group_df = bb_cellmeta(cds_main) |> 
+               filter(partition_assignment == "B") |> 
+               mutate(type_timepoint1 = paste0(patient_type, "_", timepoint_merged_1)) |> 
+               select(cell_id, type_timepoint1)) |> 
+  t() |> 
+  scale() |> 
+  t() |> 
+  as.matrix()
+
+{
+name_tbl <- tibble(feature_id = rownames(bcr_signature_genes_mat)) |> 
+  left_join(bb_rowmeta(cds_main))
+sanity_check <- waldo::compare(rownames(bcr_signature_genes_mat), name_tbl$feature_id)
+if (length(sanity_check) > 0)
+  cli::cli_abort("problems")
+rownames(bcr_signature_genes_mat) <- name_tbl$gene_short_name
+rm(name_tbl)
+}
+
+col_fun_heatmap_bcells1 <- 
+  colorRamp2(
+    breaks = c(min(bcr_signature_genes_mat),
+               0,
+               max(bcr_signature_genes_mat)),
+    colors = heatmap_3_colors
+  )
+
+bcr_signature_genes_hm <-
+  grid.grabExpr(draw(
+    Heatmap(matrix = as.matrix(bcr_signature_genes_mat),
+            name = "Expression",
+            column_split = c(rep("BTK", times = 3), rep("MRD", times = 3)),
+            col = col_fun_heatmap_bcells1,
             row_names_gp = gpar(fontsize = 10),
             column_dend_height = unit(3,"mm"), 
             row_dend_width = unit(3,"mm"),
             bottom_annotation = module_heatmap_anno, 
-            show_column_names = F
+            show_column_names = F,
+            cluster_columns = FALSE
             ), merge_legend = TRUE), wrap = TRUE)
-plot_grid(module_heatmap_bcells)
+plot_grid(bcr_signature_genes_hm)
+
+# save_plot(plot_grid(bcr_signature_genes_hm), filename = fs::path(network_out, "bcr_signature_genes_hm.png"), base_width = 5, base_height = 7)
+
 
 # subpop gene dotplot
 
@@ -330,9 +400,11 @@ subpop_top_markers_heatmap <-
     name = "Expression",
     column_dend_height = unit(3,"mm"), 
     row_dend_width = unit(3,"mm"),
+    row_names_gp = gpar(fontsize = 8),
     show_column_names = FALSE,
     column_dend_side = "bottom",
-    top_annotation = tm_anno
+    top_annotation = tm_anno,
+    heatmap_legend_param = list(title_gp = gpar(fontsize = 9, fontface = "bold"))
   )),wrap = TRUE)
 plot_grid(subpop_top_markers_heatmap)
 
@@ -343,7 +415,7 @@ normalized_leiden_counts <-
   colData(cds_main) %>%
   as_tibble() %>%
   filter(partition_assignment == "B") %>%
-  group_by(patient, leiden_assignment_binned_renamed, specimen, timepoint_merged, patient_type) %>%
+  group_by(patient, leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type1) %>%
   summarise(n = n()) %>%
   left_join(colData(cds_main) %>%
               as_tibble() %>%
@@ -351,15 +423,15 @@ normalized_leiden_counts <-
               summarise(specimen_total = n())) %>%
   mutate(overall_total = nrow(colData(cds_main))) %>%
   mutate(normalized_count = n*overall_total/specimen_total/2) %>%
-  select(leiden_assignment_binned_renamed, specimen, timepoint_merged, patient_type, normalized_count)
+  select(leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type1, normalized_count)
 
 cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   pivot_wider(names_from = leiden_assignment_binned_renamed, values_from = normalized_count, values_fill = 1) %>%
   mutate(btk_to_other_ratio = (`CLL-like`)/(stressed + inflammatory)) %>%
   mutate(log2_ratio = log2(btk_to_other_ratio)) %>%
-  ggplot(mapping = aes(x = patient_type, y = log2_ratio, color = patient_type, fill = patient_type)) +
+  ggplot(mapping = aes(x = patient_type1, y = log2_ratio, color = patient_type1, fill = patient_type1)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
-  facet_wrap(facets = vars(timepoint_merged)) +
+  facet_wrap(facets = vars(timepoint_merged_1)) +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
   scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
   theme(strip.background = element_blank()) +
@@ -371,12 +443,16 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
     size = summarybox_size,
     width = summarybox_width,
     alpha = summarybox_alpha,
-    geom = summarybox_geom
+    geom = summarybox_geom, 
+    show.legend = FALSE
   ) +
-  stat_compare_means(method = "wilcox", label = "p.signif", label.x.npc = "center", label.y = 16) +
+  stat_compare_means(method = "wilcox", label = "p.signif", label.x.npc = "center", label.y = 16, show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(CLL-like:other)", x = "Patient Type") +
-  theme(axis.title.y.left = ggtext::element_markdown())
+  labs(y = "log<sub>2</sub>(CLL-like:other)", color = "Patient Type", fill = "Patient Type", x = NULL) +
+  theme(axis.title.y.left = ggtext::element_markdown()) + 
+  theme(axis.text.x.bottom = element_blank()) +
+  theme(axis.ticks.x.bottom = element_blank()) +
+  theme(legend.position = "bottom", legend.justification = "center")
 cluster_proportion_ratio_plot
 
 # heatmap of patient characteristics
@@ -475,7 +551,7 @@ pt_char_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(
   
 )), wrap = TRUE, width = unit(5, "in"), height = unit(5, "in")) 
 
-save_plot(filename = fs::path(network_out, "pt_char_hm.png"), plot_grid(pt_char_hm), base_width = 10, base_height = 7.5)
+# save_plot(filename = fs::path(network_out, "pt_char_hm.png"), plot_grid(pt_char_hm), base_width = 10, base_height = 7.5)
 
 #  barchart by patient type
 
@@ -578,11 +654,11 @@ mod_expr_hms <-
   set_names(c("all", "B", "T", "NK", "Mono"))
   # set_names("Mono")
 
-plot_grid(mod_expr_hms$B)
-plot_grid(mod_expr_hms$all)
-walk2(.x = mod_expr_hms,
-      .y = names(mod_expr_hms),
-     .f = \(x, y, out = network_out) save_plot(plot = x, filename = fs::path(out, paste0(y, "_module_expr.png")), base_height = 7.5, base_width = 10))
-
-names(mod_expr_hms[1])
+# plot_grid(mod_expr_hms$B)
+# plot_grid(mod_expr_hms$all)
+# walk2(.x = mod_expr_hms,
+#       .y = names(mod_expr_hms),
+#      .f = \(x, y, out = network_out) save_plot(plot = x, filename = fs::path(out, paste0(y, "_module_expr.png")), base_height = 7.5, base_width = 10))
+# 
+# names(mod_expr_hms[1])
 
