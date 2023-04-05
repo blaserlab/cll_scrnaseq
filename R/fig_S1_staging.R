@@ -6,12 +6,18 @@ umap_partitions <- bb_var_umap(
   group_label_size = 4,
   foreground_alpha = 0.1
 )
+umap_partitions
+# save_plot(umap_partitions, file = fs::path(network_out, "umap_partitions.png"), base_width = 4.4, base_height = 4.0)
+
 
 umap_bcell_leiden <- 
   bb_var_umap(cds_main[, colData(cds_main)$partition_assignment %in% c("B")],
               var = "leiden", 
               overwrite_labels = T,
               foreground_alpha = 0.1)
+umap_bcell_leiden
+# save_plot(umap_bcell_leiden, filename = fs::path(network_out, "umap_bcell_leiden.png"), base_width = 4.4, base_height = 4.0)
+
 
 umap_binned_leiden <-
   bb_var_umap(cds_main[, colData(cds_main)$partition_assignment %in% c("B")],

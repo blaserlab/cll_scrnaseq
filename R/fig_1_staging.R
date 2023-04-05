@@ -29,7 +29,8 @@ umap_subcluster <-
     overwrite_labels = TRUE
   ) 
 umap_subcluster
-bb_cellmeta(cds_main) |> glimpse()
+# save_plot(umap_subcluster, filename = fs::path(network_out, "umap_sublcuster.png"), base_width = 4.4, base_height = 4.0)
+
 # # volcano plot MRD1 vs BTK cluster----------------------------------------
 # genes_to_highlight_MRD1_BTK <- c("FBLN5","PLCB1", "TAL2", "MIR155HG")
 # 
@@ -555,21 +556,27 @@ pt_char_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(
 
 #  barchart by patient type
 
-bb_cellmeta(cds_main) |> count(patient_type)
+bb_cellmeta(cds_main) |> 
+  count(patient_type1, partition_assignment, timepoint_merged) |> 
+  mutate(timepoint_merged = recode(timepoint_merged, "baseline" = 1L, "3yrs|btk_clone" =  2L, "5yrs|relapse" = 3L)) |> 
+  pivot_wider(names_from = "partition_assignment", values_from = "n", values_fill = 0) |> 
+  write_tsv(fs::path(network_tables, "cell_composition_absolute.csv"))
 
 cell_composition_barchart <- bb_cellmeta(cds_main) |>
-  group_by(patient_type) |> 
+  group_by(patient_type1) |> 
   slice_sample(n = 25101) |> 
   ungroup() |> 
-  count(patient_type, timepoint_merged, partition_assignment) |> 
+  count(patient_type1, timepoint_merged, partition_assignment) |> 
   pivot_wider(names_from = "partition_assignment", values_from = n, values_fill = 0) |> 
   mutate(timepoint_merged = recode(timepoint_merged, "baseline" = 1L, "3yrs|btk_clone" =  2L, "5yrs|relapse" = 3L)) |> 
-  pivot_longer(-c(patient_type, timepoint_merged), names_to = "partition_assignment", values_to = "count") |> 
+  pivot_longer(-c(patient_type1, timepoint_merged), names_to = "partition_assignment", values_to = "count") |> 
   group_by(partition_assignment, timepoint_merged) |> 
   mutate(pct = count/sum(count)*100) |> 
-  ggplot(aes(x = partition_assignment, y = pct, fill = patient_type)) +
+  ggplot(aes(x = partition_assignment, y = pct, fill = patient_type1)) +
   geom_col() +
-  facet_wrap(~timepoint_merged, scales = "free_x")
+  facet_wrap(~timepoint_merged, scales = "free_x") +
+  labs(fill = NULL, x = NULL)
+cell_composition_barchart
 
 # save_plot(cell_composition_barchart, filename = fs::path(network_out, "cell_comp_barchart.png"), base_width = 10, base_height = 7.5)
 
