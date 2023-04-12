@@ -55,6 +55,17 @@ colData(cds_main)$timepoint_merged_1 <- recode(colData(cds_main)$timepoint_merge
                                                "3yrs|btk_clone" = "2",
                                                "5yrs|relapse" = "3")
 
+colData(cds_main)$patient_type1 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "responsive")
+
+leiden_l1_assignment <- bb_cellmeta(cds_main) |> 
+  count(leiden, seurat_celltype_l1) |> 
+  group_by(leiden) |> 
+  slice_max(order_by = n, n = 1) |> 
+  select(leiden, seurat_celltype_l1) |> 
+  deframe()
+
+colData(cds_main)$leiden_l1_assignment <- recode(colData(cds_main)$leiden, !!!leiden_l1_assignment)
+
 
 network_out <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/source"
 network_tables <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"

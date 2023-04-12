@@ -1,4 +1,3 @@
-colData(cds_main)$patient_type1 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "responsive")
 bb_cellmeta(cds_main) |> glimpse()
 
 # global umap density faceted--------------------------------
