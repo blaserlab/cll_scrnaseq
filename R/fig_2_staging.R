@@ -1,13 +1,3 @@
-seurat_l2_leiden_consensus <- bb_cellmeta(cds_main) |> 
-  group_by(leiden, seurat_celltype_l2) |> 
-  summarise(n = n()) |> 
-  slice_max(order_by = n, n = 1) |> 
-  select(leiden, seurat_celltype_l2) |> 
-  deframe()
-
-colData(cds_main)$seurat_l2_leiden_consensus <- recode(colData(cds_main)$leiden, !!!seurat_l2_leiden_consensus)
-colData(cds_main)$seurat_l2_leiden_consensus <- as.character(colData(cds_main)$seurat_l2_leiden_consensus)
-
 
 tcell_subpop_umap <-
   bb_var_umap(
@@ -17,6 +7,7 @@ tcell_subpop_umap <-
     group_label_size = 3,
     foreground_alpha = 0.2
   )
+tcell_subpop_umap
 
 t_cell_subpop_genes <-
   c("IFNG", "TBX21", "EOMES", "IL2RA", "FOXP3", "CCR7")
