@@ -21,28 +21,6 @@ umap_density
 if (save_figs) save_plot(umap_density, filename = fs::path(network_out, "umap_density.png"), base_width = 6.5, base_height = 3.5)
 
 # subcluster_umap-----------------------------------
-bb_var_umap(cds_main, "leiden", overwrite_labels = T)
-bb_cellmeta(cds_main) |> count(leiden_assignment_binned_renamed) |> View()
-colData(cds_main)$leiden_assignment_binned_2 <- recode(colData(cds_main)$leiden,
-                                                "24" = "inflammatory",
-                                                "20" = "stressed",
-                                                "27" = "CLL-like",
-                                                "3" = "CLL-like",
-                                                "16" = "CLL-like",
-                                                "40" = "CLL-like",
-                                                "29" = "CLL-like",
-                                                "5" = "CLL-like",
-                                                "6" = "CLL-like",
-                                                "2" = "CLL-like",
-                                                "4" = "CLL-like",
-                                                "9" = "CLL-like",
-                                                "10" = "CLL-like",
-                                                "11" = "CLL-like",
-                                                "1" = "CLL-like",
-                                                "32" = "New England",
-                                                "21" = "New England",
-                                                "34" = "CLL-like"
-                                                )
 umap_subcluster <- 
   bb_var_umap(
     obj = cds_main[,colData(cds_main)$partition_assignment == "B"],

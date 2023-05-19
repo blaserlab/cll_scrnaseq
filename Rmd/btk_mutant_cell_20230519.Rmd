@@ -1,0 +1,87 @@
+---
+title: 'Analysis of Single Cell BTK Mutations'
+author: "Brad Blaser"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = "center", 
+                      dev = "png", 
+                      dpi = 300)
+options(dplyr.summarise.inform = FALSE)
+source(here::here("R/dependencies.R"))
+source(here::here("R/configs.R"))
+source(here::here("R/mutant_cll.R"))
+```
+
+
+## Introduction
+
+In response to the questions that have come up regarding the BTK mutations in the CLL cells, I wanted to provide as definitive response as possbile so we can put it to bed and move on.
+
+I think we have already come to understand that the BTK mutations observed in myeloid and T cells are too rare to draw conclusions from, so I won't be addressing those cell types further here.
+
+First, recall that we defined several sub-populations.  This was initially done a long time ago based on inspection of the UMAP clusters and how they were distributed between sample types.  Probably now I would've used a more algorithmic approach, but I think the choices we have made are reasonable.  More recently we split off a "New England" shaped cluster from the main population of CLL-like cells.  
+
+```{r fig.width=5, fig.height=4}
+umap_new_england
+```
+
+
+
+Here I am going to address the relative abundance of BTK-mutant CLL cells in the New England cluster, the main cluster of CLL-like cells and the stressed cells.  We did not detect any BTK-mutant or WT cells in the inflammatory cell cluster, mostly because the overall rate of getting successful types was pretty low and the samples we did type didn't have very many cells in that cluster.
+
+## Analysis
+
+First, we wish to set a threshold for calling cells mutant or WT.  The range of BTK mutant UMIs per cell (I am assuming we used UMIs here; will have to clarify) was between 0 and 112.  The range for WT was between 1 and 214.
+
+I stratified the data into cells with 0 mutant UMIs and cells with 1 or more UMIs and plotted the distribution of BTK mutant VAF across cells.  Most of the cells in which we detect a BTK mutation, the VAF is 1.0:
+
+```{r fig.width=6.5, fig.height=4}
+vaf_density_plot
+```
+
+But also, the majority of cells with BTK mutant UMIs have only BTK UMI altogether:
+
+```{r fig.width=6.5, fig.height=4}
+btk_mutdepth_hist
+```
+
+Putting it together:
+
+```{r}
+btk_mutation_summary_table |> pander()
+```
+
+I think the preceding data give us some context for the following.  Here are some umaps where I call any cell with any (more than 0) BTK mutant reads BTK mutant.  The columns indicate BTK cell type and the rows are timepoints.
+
+```{r fig.width=7, fig.height=6.5}
+btk_type0_density_umap
+```
+
+This indicates there are a relatively large number of cells in the timepoint 1 samples with BTK mutations which is contrary to what we would suspect.  But when we raise the threshold to more than 1 mutant BTK UMI we get this:
+
+```{r fig.width=7, fig.height=6.5}
+btk_type1_density_umap
+```
+
+We lose more than half of the mutant cells but it does improve the look of timepoint 1.  So I think we have to use this threshold.
+
+Using the threshold of more than 1 BTK mutant UMI, regardless of overall BTK VAF, we now ask how the mutant and WT cells are distributed between the B cell subpopulations on a per-sample basis.  If we see a convincing enrichment of cells in one of those subpopulations then we could say the C481S mutation alters the cell's transcriptional state in some way.
+
+This is percent mutant cells in each of the 3 subpopulations by sample:
+
+```{r fig.width=4.5, fig.height=3.5}
+btk_mutant_distribution
+```
+
+So when you look at it by sample, really only one sample had mutant cells in the New England cluster.  Likewise, only one sample had mutant cells in the stressed cluster.  So I think we can conclude that there is no reproducible evidence in our data that the BTK mutation changes the transcriptional state of the B cells themselves.  
+
+Any other thoughts or comments on this?
+
+
+
