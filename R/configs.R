@@ -20,6 +20,7 @@ experimental_group_palette <- c(
   "MRD" = "#3C5488",
   "BTK" = "#DC0000",
   "responsive" = "#3C5488",
+  "sensitive" = "#3C5488",
   "resistant" = "#DC0000"
 )
 
@@ -70,6 +71,7 @@ colData(cds_main)$timepoint_merged_1 <- recode(colData(cds_main)$timepoint_merge
                                                "5yrs|relapse" = "3")
 
 colData(cds_main)$patient_type1 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "responsive")
+colData(cds_main)$patient_type2 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "sensitive")
 
 leiden_l1_assignment <- bb_cellmeta(cds_main) |> 
   count(leiden, seurat_celltype_l1) |> 

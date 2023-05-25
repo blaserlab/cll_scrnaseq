@@ -258,7 +258,7 @@ module_heatmap_bcells <-
   grid.grabExpr(draw(
     Heatmap(matrix = agg_mat_bcells_type_timepoint[, col.order],
             name = "Module\nExpression",
-            column_split = c(rep("resistant", times = 3), rep("responsive", times = 3)),
+            column_split = c(rep("resistant", times = 3), rep("sensitive", times = 3)),
             col = col_fun_heatmap_bcells,
             row_names_gp = gpar(fontsize = 8),
             column_dend_height = unit(3,"mm"), 
@@ -502,6 +502,187 @@ if (save_figs) {
   )
   
 }
+
+
+# bcell population proportions -----------------------------------
+normalized_leiden_counts <- 
+  colData(cds_main) %>%
+  as_tibble() %>%
+  filter(partition_assignment == "B") %>%
+  group_by(patient, leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type2) %>%
+  summarise(n = n()) %>%
+  left_join(colData(cds_main) %>%
+              as_tibble() %>%
+              group_by(specimen) %>%
+              summarise(specimen_total = n())) %>%
+  mutate(overall_total = nrow(colData(cds_main))) %>%
+  mutate(normalized_count = n*overall_total/specimen_total/2) %>%
+  select(leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type2, normalized_count)
+
+cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
+  pivot_wider(names_from = leiden_assignment_binned_renamed, values_from = normalized_count, values_fill = 1) %>%
+  mutate(btk_to_other_ratio = (`CLL-like`)/(stressed + inflammatory)) %>%
+  mutate(log2_ratio = log2(btk_to_other_ratio)) %>%
+  ggplot(mapping = aes(x = patient_type2, y = log2_ratio, color = patient_type2, fill = patient_type2)) +
+  geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
+  facet_wrap(facets = vars(timepoint_merged_1)) +
+  scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
+  scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
+  theme(strip.background = element_blank()) +
+  theme(panel.background = element_rect(color = "grey80")) +
+  theme(legend.position = "none") +
+  stat_summary(
+    fun.data = data_summary_mean_se,
+    color = summarybox_color,
+    size = summarybox_size,
+    width = summarybox_width,
+    alpha = summarybox_alpha,
+    geom = summarybox_geom, 
+    show.legend = FALSE
+  ) +
+  stat_compare_means(method = "wilcox", label = "p.signif", label.x.npc = "center", label.y = 16, show.legend = FALSE) +
+  scale_y_continuous(expand = expansion(mult = c(0.1))) +
+  labs(y = "log<sub>2</sub>(CLL-like:other)", color = "Patient Type", fill = "Patient Type", x = NULL) +
+  theme(axis.title.y.left = ggtext::element_markdown()) + 
+  theme(axis.text.x.bottom = element_blank()) +
+  theme(axis.ticks.x.bottom = element_blank()) +
+  theme(legend.position = "bottom", legend.justification = "center")
+
+
+if (save_figs) {
+  save_plot(cluster_proportion_ratio_plot,
+    file = fs::path(network_out, "cluster_proportion_ratio_plot.png"),
+    base_width = 3,
+    base_height = 2.5
+  )
+  
+}
+
+# treg pct plot -----------------------------------------
+treg_ratio_tbl <- left_join(
+  colData(cds_main) %>%
+    as_tibble() %>%
+    filter(partition_assignment == "T") %>%
+    group_by(specimen, patient, timepoint_merged_1, patient_type2) %>%
+    summarise(n_total_t = n()),
+  colData(cds_main) %>%
+    as_tibble() %>%
+    filter(seurat_l2_leiden_consensus == "Treg") %>%
+    group_by(specimen)  %>%
+    summarise(n_treg = n())
+) %>%
+  mutate(n_treg = replace_na(n_treg, 1)) %>%
+  mutate(treg_pct = n_treg / (n_total_t) * 100)
+
+
+
+
+treg_pct_plot <-
+  ggplot(
+    treg_ratio_tbl,
+    mapping = aes(
+      x = patient_type2,
+      y = treg_pct,
+      color = patient_type2,
+      fill = patient_type2
+    )
+  ) +
+  geom_jitter(width = jitter_width,
+              size = jitter_size,
+              shape = jitter_shape) +
+  scale_color_manual(values = experimental_group_palette) +
+  scale_fill_manual(values = alpha(alpha = 0.4, colour = experimental_group_palette)) +
+  coord_trans(y = "log10", clip = "off") +
+  scale_y_continuous(breaks = c(60, 20, 6, 2, 0.6, 0.2) / 2) +
+  annotation_logticks(scaled = F,
+                      sides = "l",
+                      outside = F) +
+  theme(legend.position = "none") +
+  facet_wrap(facets = vars(timepoint_merged_1)) +
+  stat_summary(
+    fun.data = data_summary_mean_se,
+    color = summarybox_color,
+    size = summarybox_size,
+    width = summarybox_width,
+    alpha = summarybox_alpha,
+    geom = summarybox_geom, 
+    show.legend = FALSE
+  ) +
+  stat_compare_means(method = "t.test",
+                     label = "p.signif",
+                     label.x.npc = 0.5, 
+                     show.legend = FALSE) +
+  theme(strip.background = element_blank()) + 
+  labs(y = "Percent T<sub>reg</sub>", color = "Patient Type", fill = "Patient Type", x = NULL) +
+  theme(axis.title.y.left = ggtext::element_markdown()) + 
+  theme(axis.text.x.bottom = element_blank()) +
+  theme(axis.ticks.x.bottom = element_blank()) +
+  theme(legend.position = "bottom", legend.justification = "center")
+treg_pct_plot
+
+if (save_figs) {
+  save_plot(treg_pct_plot,
+    file = fs::path(network_out, "treg_pct_plot.png"),
+    base_width = 3.5,
+    base_height = 2.5 
+  )
+  
+}
+
+# exhaustion marker gene bubbles ------------------------------
+exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
+exh_bubdat <- bb_genebubbles(filter_cds(
+  cds_main,
+  cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
+), genes = exhaustion_genes, 
+cell_grouping = c("seurat_l2_leiden_consensus", "timepoint_merged_1", "patient_type2"), return_value = "data")
+
+exh_genebub <- ggplot(exh_bubdat, aes(x = seurat_l2_leiden_consensus, y = gene_short_name, color = expression, size = proportion)) +
+  geom_point() +
+  scale_size_area() +
+  scale_color_viridis_c() + 
+  facet_grid(patient_type2 ~ timepoint_merged_1) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  panel_border() +
+  labs(x = NULL, y = NULL) +
+  theme(strip.background = element_blank()) +
+  theme(axis.text.y = element_text(face = "italic"))
+exh_genebub
+
+if (save_figs) {
+  save_plot(exh_genebub,
+    file = fs::path(network_out, "exh_genebub.png"),
+    base_width = 4.5,
+    base_height = 3.0 
+  )
+  
+}
+
+# module go term bubbles
+
+mod4_enrichments <- module_enrichment$`Module 4`$res_table |> 
+  mutate(cF_numeric = as.numeric(recode(classicFisher, "< 1e-30" = "1e-30"))) |> 
+  mutate(neg_log_cF = -log10(cF_numeric)) |> 
+  mutate(Term = fct_reorder(Term, neg_log_cF, .desc = FALSE))
+mod4_enrichments
+
+mod4_enrichment_plot <- ggplot(mod4_enrichments |> slice_max(neg_log_cF, n = 20), aes(y = Term, x = neg_log_cF, size = Annotated)) +
+  geom_point(pch = 21, color = "black", fill = alpha("black", alpha = 0.2)) +
+  scale_size_area(limits=c(100, 10000), breaks = (c(300, 1000,3000, 10000))) +
+  labs(x = "-log<sub>10</sub>P", y = NULL, size = "Size") +
+  theme_minimal_grid(font_size = 10) +
+  theme(axis.title.x.bottom = ggtext::element_markdown())
+
+if (save_figs) {
+  save_plot(mod4_enrichment_plot,
+            file = fs::path(network_out, "mod4_enrichment_plot.png"),
+            base_width = 5.5,
+            base_height = 3.0 
+  )
+  
+}
+
+
 
 
 

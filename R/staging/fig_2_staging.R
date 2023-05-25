@@ -97,6 +97,8 @@ treg_pct_plot <-
                      label = "p.signif",
                      label.x.npc = 0.5) +
   theme(strip.background = element_blank())
+treg_pct_plot
+
 
 exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
 exh_bubdat <- bb_genebubbles(filter_cds(
