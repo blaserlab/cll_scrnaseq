@@ -113,9 +113,9 @@ colData(cds_main)$leiden_assignment_binned_2 <- recode(colData(cds_main)$leiden,
                                                 "34" = "CLL-like"
                                                 )
 
-network_out <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/new_figs"
-network_tables <- "/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables"
-
+network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/new_figs")
+network_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
+paper_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
 
 # source local configs ----------------------------------------------------
 # these are sourced after main configs and will overwrite duplicate entries if

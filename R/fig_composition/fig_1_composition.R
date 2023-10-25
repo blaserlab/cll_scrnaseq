@@ -3,7 +3,7 @@
 
 fig_1_top <-
   plot_grid(
-    umap_density,
+    umap_partition_assignment,
     NULL,
     ncol = 2,
     rel_widths = c(4,1),

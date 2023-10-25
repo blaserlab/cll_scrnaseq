@@ -1,6 +1,17 @@
-save_figs <- TRUE
+save_figs <- FALSE
 
-# global umap density faceted--------------------------------
+# global umap partition_assignment ------------------------
+bb_cellmeta(cds_main) |> glimpse()
+umap_partition_assignment <- bb_var_umap(
+  obj = cds_main,
+  var = "partition_assignment",
+  foreground_alpha = 0.1,
+  rasterize = TRUE,
+  overwrite_labels = TRUE
+)
+umap_partition_assignment + bb_var_umap(cds_main, "seurat_celltype_l1", rasterize = TRUE)
+
+# B cell umap density faceted--------------------------------
 umap_density <- 
   bb_var_umap(
     obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
@@ -8,17 +19,17 @@ umap_density <-
     sample_equally = TRUE,
     cell_size = 1,
     nbin = 100,
-    facet_by = c("patient_type1", "timepoint_merged_1"),
-    rows = vars(patient_type1), 
+    facet_by = c("patient_type2", "timepoint_merged_1"),
+    rows = vars(patient_type2), 
     cols = vars(timepoint_merged_1),
-    foreground_alpha = 0.6
+    foreground_alpha = 0.6, 
+    rasterize = TRUE
   ) +
   theme(panel.background = element_rect(color = "grey80")) +
   theme(legend.justification = "center") +
   labs(color = "Cell\nDensity")
 umap_density
 
-if (save_figs) save_plot(umap_density, filename = fs::path(network_out, "umap_density.png"), base_width = 6.5, base_height = 3.5)
 
 # subcluster_umap-----------------------------------
 umap_subcluster <- 

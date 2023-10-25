@@ -1,3 +1,13 @@
+# sequencing metrics----------------------
+summarized_sequencing_metrics |> 
+  rename(sample = cds_name) |> 
+  left_join(bb_cellmeta(cds_main) |> count(sample, patient, patient_type2, timepoint_merged_1)) |> 
+  select(Patient = patient, `Ibrutinib Response` = patient_type2, Timepoint = timepoint_merged_1, `Pre-filter Cell Count` = cds_dim_cells, `Mean Reads per Cell`, `Fraction Reads in Cells`,  `Post-filter Cell Count` = n) |> 
+  write_csv(fs::path(paper_tables, "table_S1.csv"))
+
+# cell  number calcs ----------------------
+bb_cellmeta(cds_main) |> count(sample) |> rstatix::get_summary_stats(n)
+
 # gene modules-------------------
 rowData(cds_main) %>%
   as_tibble() %>%
