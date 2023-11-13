@@ -1,4 +1,3 @@
-save_figs <- FALSE
 
 # global umap partition_assignment ------------------------
 bb_cellmeta(cds_main) |> glimpse()
@@ -10,6 +9,17 @@ umap_partition_assignment <- bb_var_umap(
   overwrite_labels = TRUE
 )
 umap_partition_assignment + bb_var_umap(cds_main, "seurat_celltype_l1", rasterize = TRUE)
+
+# reference annotation barchart -------------------------------------------
+reference_anno_barchart <- bb_cellmeta(cds_main) |> 
+  count(partition_assignment, seurat_celltype_l1) |>
+  ggplot(aes(x = partition_assignment, fill = seurat_celltype_l1, y = n)) +
+  geom_bar(color = "black",
+           stat = "identity",
+           position = "fill") + 
+  labs(fill = "Reference celltype", x = NULL, y = "Percent of cluster")
+
+
 
 # B cell umap density faceted--------------------------------
 umap_density <- 
@@ -30,18 +40,28 @@ umap_density <-
   labs(color = "Cell\nDensity")
 umap_density
 
+# leiden umap -----------------------------------------------
+umap_leiden_l1 <-
+  bb_var_umap(
+    cds_main,
+    "leiden_l1_assignment",
+    value_to_highlight = c("B", "CD4 T", "CD8 T", "NK"),
+    facet_by = c("timepoint_merged_2", "patient_type2"),
+    cols = vars(timepoint_merged_2),
+    rows  = vars(patient_type2),
+    foreground_alpha = 0.2
+  ) + panel_border()
 
 # subcluster_umap-----------------------------------
 umap_subcluster <- 
   bb_var_umap(
     obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
-    var = "leiden_assignment_binned_2",
+    var = "leiden_assignment_binned_renamed",
     cell_size = 1,
     foreground_alpha = 0.1,
-    overwrite_labels = TRUE
+    overwrite_labels = TRUE,
+    group_label_size = 4
   ) 
-umap_subcluster
-if (save_figs) save_plot(umap_subcluster, filename = fs::path(network_out, "umap_sublcuster.png"), base_width = 4.4, base_height = 4.0)
 
 # volcano plot --------------------
 
@@ -92,9 +112,8 @@ volcano_BTK_bcells <-
                                                filter(!is.na(padj)) %>% 
                                                pull(log2FoldChange))))))
 volcano_BTK_bcells
-if (save_figs) save_plot(volcano_BTK_bcells, filename = fs::path(network_out, "volcano_plot.png"), base_height = 2.5, base_width = 2.5)
 
-# b cell subpopulation heatmap ------------------------------
+# b cell subpopulation gene_expression heatmap ------------------------------
 
 dotplot_markers <- c(
   "FCER2",
@@ -162,8 +181,8 @@ col_fun_heatmap_topmarkers <-
 tm_anno <- columnAnnotation(link =  anno_mark(
   at = which(colnames(subpop_top_markers_mat) %in% dotplot_markers),
   labels = colnames(subpop_top_markers_mat)[colnames(subpop_top_markers_mat) %in% dotplot_markers],
-  labels_gp = gpar(fontsize = 8),
-  padding = 1
+  labels_gp = gpar(fontsize = 14),
+  padding = 0
 ))
 
 
@@ -174,14 +193,13 @@ subpop_top_markers_heatmap <-
     name = "Expression",
     column_dend_height = unit(3,"mm"), 
     row_dend_width = unit(3,"mm"),
-    row_names_gp = gpar(fontsize = 8),
+    row_names_gp = gpar(fontsize = 14),
     show_column_names = FALSE,
     column_dend_side = "bottom",
     top_annotation = tm_anno,
-    heatmap_legend_param = list(title_gp = gpar(fontsize = 9, fontface = "bold"))
-  )),wrap = TRUE)
+    heatmap_legend_param = list(title_gp = gpar(fontsize = 18), direction = "horizontal"),
+  ), heatmap_legend_side = "bottom"), wrap = TRUE)
 plot_grid(subpop_top_markers_heatmap)
-if (save_figs) save_plot(plot_grid(subpop_top_markers_heatmap), filename = fs::path(network_out, "subpop_top_markers_heatmap.png"), base_width = 7.5, base_height = 3.5)
 
 # population fold change plot-----------------------------------------------------------
 normalized_leiden_counts <- 
@@ -251,10 +269,10 @@ module_heatmap_anno <- ComplexHeatmap::HeatmapAnnotation(
   border = TRUE, 
   gp = gpar(col = "black"),
   annotation_label = "Timepoint",
-  annotation_name_gp = gpar(fontsize = 8), 
+  annotation_name_gp = gpar(fontsize = 14), 
   annotation_legend_param = list(border = "black",
                                  title = "Timepoint",
-                                 title_gp = gpar(fontsize = 9, fontface = "bold")))
+                                 title_gp = gpar(fontsize = 18)))
 
 
 col_fun_heatmap_bcells <- 
@@ -265,38 +283,36 @@ col_fun_heatmap_bcells <-
     colors = heatmap_3_colors
   )
 
+
 module_heatmap_bcells <-
   grid.grabExpr(draw(
     Heatmap(matrix = agg_mat_bcells_type_timepoint[, col.order],
             name = "Module\nExpression",
             column_split = c(rep("resistant", times = 3), rep("sensitive", times = 3)),
             col = col_fun_heatmap_bcells,
-            row_names_gp = gpar(fontsize = 8),
-            column_dend_height = unit(3,"mm"), 
+            row_names_gp = gpar(fontsize = 14),
+            column_dend_height = unit(3,"mm"),
             row_dend_width = unit(3,"mm"),
-            bottom_annotation = module_heatmap_anno, 
+            bottom_annotation = module_heatmap_anno,
             show_column_names = F,
             cluster_columns = FALSE, 
-            column_title_gp = gpar(fontsize = 9),
-            heatmap_legend_param = list(title_gp = gpar(fontsize = 9, fontface = "bold"))
-              ), merge_legend = TRUE), wrap = TRUE)
-
-plot_grid(module_heatmap_bcells)
-if (save_figs) save_plot(plot_grid(module_heatmap_bcells), filename = fs::path(network_out, "module_heatmap_bcells.png"), base_width = 4, base_height = 4)
+            column_title_gp = gpar(fontsize = 18),
+            heatmap_legend_param = list(title_gp = gpar(fontsize = 18))
+              ), merge_legend = TRUE), wrap = TRUE,width = 6)
 
 
 
 
+# tcell subpop umap -------------------------------------
 tcell_subpop_umap <-
   bb_var_umap(
     cds_main[, colData(cds_main)$partition_assignment == "T"],
     "seurat_l2_leiden_consensus",
     overwrite_labels = T,
-    group_label_size = 3,
+    group_label_size = 4,
     foreground_alpha = 0.2
   )
 tcell_subpop_umap
-if (save_figs) save_plot(tcell_subpop_umap, filename = fs::path(network_out, "tcell_subpop_umap.png"), base_width = 4.4, base_height = 4.0)
 
 # T cell genes---------------------------------------------
 
@@ -367,17 +383,6 @@ tcell_genexp_hm_unclustered <-
   ),
   wrap = TRUE)
 
-if (save_figs) {
-  save_plot(
-    plot_grid(tcell_genexp_hm_unclustered),
-    file = fs::path(network_out, "tcell_geneexp_hm_unclustered.png"),
-    base_width = 8.5,
-    base_height = 11
-  )
-  
-}
-
-
 tcell_genexp_hm <-
   grid.grabExpr(draw(
     ComplexHeatmap::Heatmap(
@@ -394,20 +399,9 @@ tcell_genexp_hm <-
   ),
   wrap = TRUE)
 
-if (save_figs) {
-  save_plot(
-    plot_grid(tcell_genexp_hm),
-    file = fs::path(network_out, "tcell_geneexp_hm.png"),
-    base_width = 8.5,
-    base_height = 11
-  )
-  
-}
 
 # NK cell genes----------------------------------------
 
-bb_var_umap(cds_main, "partition_assignment")
-bb_var_umap(cds_main, "seurat_l2_leiden_consensus")
 
 {
   colData(cds_main)$sample_cluster <- paste0(colData(cds_main)$sample, "_", colData(cds_main)$seurat_l2_leiden_consensus)
@@ -477,15 +471,6 @@ nk_genexp_hm_unclustered <-
   wrap = TRUE)
 
 
-if (save_figs) {
-  save_plot(
-    plot_grid(nk_genexp_hm_unclustered),
-    file = fs::path(network_out, "nk_geneexp_hm_unclustered.png"),
-    base_width = 8.5,
-    base_height = 5.5 
-  )
-  
-}
 
 
 nk_genexp_hm <-
@@ -504,15 +489,7 @@ nk_genexp_hm <-
   ),
   wrap = TRUE)
 
-if (save_figs) {
-  save_plot(
-    plot_grid(nk_genexp_hm),
-    file = fs::path(network_out, "nk_geneexp_hm.png"),
-    base_width = 8.5,
-    base_height = 5.5
-  )
   
-}
 
 
 # bcell population proportions -----------------------------------
@@ -560,21 +537,13 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   theme(legend.position = "bottom", legend.justification = "center")
 
 
-if (save_figs) {
-  save_plot(cluster_proportion_ratio_plot,
-    file = fs::path(network_out, "cluster_proportion_ratio_plot.png"),
-    base_width = 3,
-    base_height = 2.5
-  )
-  
-}
 
 # treg pct plot -----------------------------------------
 treg_ratio_tbl <- left_join(
   colData(cds_main) %>%
     as_tibble() %>%
     filter(partition_assignment == "T") %>%
-    group_by(specimen, patient, timepoint_merged_1, patient_type2) %>%
+    group_by(specimen, patient, timepoint_merged_2, patient_type2) %>%
     summarise(n_total_t = n()),
   colData(cds_main) %>%
     as_tibble() %>%
@@ -609,7 +578,7 @@ treg_pct_plot <-
                       sides = "l",
                       outside = F) +
   theme(legend.position = "none") +
-  facet_wrap(facets = vars(timepoint_merged_1)) +
+  facet_wrap(facets = vars(timepoint_merged_2)) +
   stat_summary(
     fun.data = data_summary_mean_se,
     color = summarybox_color,
@@ -627,18 +596,40 @@ treg_pct_plot <-
   labs(y = "Percent T<sub>reg</sub>", color = "Patient Type", fill = "Patient Type", x = NULL) +
   theme(axis.title.y.left = ggtext::element_markdown()) + 
   theme(axis.text.x.bottom = element_blank()) +
-  theme(axis.ticks.x.bottom = element_blank()) +
+  # theme(axis.ticks.x.bottom = element_blank()) +
   theme(legend.position = "bottom", legend.justification = "center")
 treg_pct_plot
 
-if (save_figs) {
-  save_plot(treg_pct_plot,
-    file = fs::path(network_out, "treg_pct_plot.png"),
-    base_width = 3.5,
-    base_height = 2.5 
-  )
-  
-}
+# tcr diversity plot -------------------------------
+tcr_diversity_plot <- bb_cellmeta(cds_main) |> 
+  group_by(patient_type2, sample, timepoint_merged_2) |> 
+  summarise(diversity = mean(specimen_tcr_shannon, na.rm = TRUE)) |> 
+  ggplot(aes(x = patient_type2, color = patient_type2, fill = patient_type2, y = diversity)) +
+  geom_jitter(width = jitter_width,
+              size = jitter_size,
+              shape = jitter_shape) +
+  scale_color_manual(values = experimental_group_palette) +
+  scale_fill_manual(values = alpha(alpha = 0.4, colour = experimental_group_palette)) +
+  stat_summary(
+    fun.data = data_summary_mean_se,
+    color = summarybox_color,
+    size = summarybox_size,
+    width = summarybox_width,
+    alpha = summarybox_alpha,
+    geom = summarybox_geom, 
+    show.legend = FALSE
+  ) +
+  stat_compare_means(method = "t.test",
+                     label = "p.signif",
+                     label.x.npc = 0.5, 
+                     show.legend = FALSE) +
+  theme(strip.background = element_blank()) +
+  facet_wrap(~timepoint_merged_2) +
+  labs(y = "TCR Diversity", color = "Patient Type", fill = "Patient Type", x = NULL) +
+  theme(axis.text.x.bottom = element_blank()) +
+  # theme(axis.ticks.x.bottom = element_blank()) +
+  theme(legend.position = "bottom", legend.justification = "center")
+
 
 # exhaustion marker gene bubbles ------------------------------
 exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
@@ -646,13 +637,13 @@ exh_bubdat <- bb_genebubbles(filter_cds(
   cds_main,
   cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
 ), genes = exhaustion_genes, 
-cell_grouping = c("seurat_l2_leiden_consensus", "timepoint_merged_1", "patient_type2"), return_value = "data")
+cell_grouping = c("seurat_l2_leiden_consensus", "timepoint_merged_2", "patient_type2"), return_value = "data")
 
 exh_genebub <- ggplot(exh_bubdat, aes(x = seurat_l2_leiden_consensus, y = gene_short_name, color = expression, size = proportion)) +
   geom_point() +
   scale_size_area() +
   scale_color_viridis_c() + 
-  facet_grid(patient_type2 ~ timepoint_merged_1) +
+  facet_grid(patient_type2 ~ timepoint_merged_2) +
   theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   panel_border() +
   labs(x = NULL, y = NULL) +
@@ -660,14 +651,6 @@ exh_genebub <- ggplot(exh_bubdat, aes(x = seurat_l2_leiden_consensus, y = gene_s
   theme(axis.text.y = element_text(face = "italic"))
 exh_genebub
 
-if (save_figs) {
-  save_plot(exh_genebub,
-    file = fs::path(network_out, "exh_genebub.png"),
-    base_width = 4.5,
-    base_height = 3.0 
-  )
-  
-}
 
 # module go term bubbles
 
@@ -683,15 +666,6 @@ mod4_enrichment_plot <- ggplot(mod4_enrichments |> slice_max(neg_log_cF, n = 20)
   labs(x = "-log<sub>10</sub>P", y = NULL, size = "Size") +
   theme_minimal_grid(font_size = 10) +
   theme(axis.title.x.bottom = ggtext::element_markdown())
-
-if (save_figs) {
-  save_plot(mod4_enrichment_plot,
-            file = fs::path(network_out, "mod4_enrichment_plot.png"),
-            base_width = 5.5,
-            base_height = 3.0 
-  )
-  
-}
 
 
 

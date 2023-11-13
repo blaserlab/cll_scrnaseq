@@ -249,7 +249,7 @@ R_version	name	version	date_time	hash	binary_location	status
 4.3.0	cisTopic	0.3.0	2023-05-18T01:45:25Z	442dfbfbc85d223b817c605147a4c0ec	/workspace/rst/cache_R_4_3/library/cisTopic/0.3.0/442dfbfbc85d223b817c605147a4c0ec/cisTopic	available
 4.3.0	class	7.3.21	2023-05-02T21:13:45Z	9eee7c0744795306d58b94449fa0fbea	/workspace/rst/cache_R_4_3/library/class/7.3-21/9eee7c0744795306d58b94449fa0fbea/class	available
 4.3.0	classInt	0.4.9	2023-05-02T21:44:40Z	0ea9c2a6d2922e8dcd3cbd4612890234	/workspace/rst/cache_R_4_3/library/classInt/0.4-9/0ea9c2a6d2922e8dcd3cbd4612890234/classInt	available
-4.3.0	cli	3.6.1	2023-05-02T21:13:45Z	c094f2d63b8b102f54b7d23405769d2a	/workspace/rst/cache_R_4_3/library/cli/3.6.1/c094f2d63b8b102f54b7d23405769d2a/cli	active
+4.3.0	cli	3.6.1	2023-05-02T21:13:45Z	c094f2d63b8b102f54b7d23405769d2a	/workspace/rst/cache_R_4_3/library/cli/3.6.1/c094f2d63b8b102f54b7d23405769d2a/cli	available
 4.3.0	clipr	0.8.0	2023-05-02T21:13:45Z	12634813c537309a15c02099e12fb83d	/workspace/rst/cache_R_4_3/library/clipr/0.8.0/12634813c537309a15c02099e12fb83d/clipr	available
 4.3.0	cll.scrnaseq.datapkg	0.0.0.9011	2023-05-19T02:13:42Z	e4de9ef8a378a4b9569d742d6efaa171	/workspace/rst/cache_R_4_3/library/cll.scrnaseq.datapkg/0.0.0.9011/e4de9ef8a378a4b9569d742d6efaa171/cll.scrnaseq.datapkg	available
 4.3.0	clock	0.6.1	2023-05-03T02:50:41Z	d4a479491cbe7bfb4a3ba4f4c8123a14	/workspace/rst/cache_R_4_3/library/clock/0.6.1/d4a479491cbe7bfb4a3ba4f4c8123a14/clock	available
@@ -850,7 +850,7 @@ R_version	name	version	date_time	hash	binary_location	status
 4.3.0	visNetwork	2.1.2	2023-05-03T02:51:17Z	6201a4c8b2499e995765f37633de365b	/workspace/rst/cache_R_4_3/library/visNetwork/2.1.2/6201a4c8b2499e995765f37633de365b/visNetwork	available
 4.3.0	vroom	1.6.3	2023-05-02T21:13:57Z	2060d78163904354159a5a359d6f27d3	/workspace/rst/cache_R_4_3/library/vroom/1.6.3/2060d78163904354159a5a359d6f27d3/vroom	available
 4.3.0	vsn	3.68.0	2023-05-03T02:51:18Z	afef3a26454ba07d3fcc03cabcc5aa58	/workspace/rst/cache_R_4_3/library/vsn/3.68.0/afef3a26454ba07d3fcc03cabcc5aa58/vsn	available
-4.3.0	waldo	0.5.0	2023-05-02T21:13:57Z	f54f0c99826e6b82898874fed9dc6cf1	/workspace/rst/cache_R_4_3/library/waldo/0.5.0/f54f0c99826e6b82898874fed9dc6cf1/waldo	active
+4.3.0	waldo	0.5.0	2023-05-02T21:13:57Z	f54f0c99826e6b82898874fed9dc6cf1	/workspace/rst/cache_R_4_3/library/waldo/0.5.0/f54f0c99826e6b82898874fed9dc6cf1/waldo	available
 4.3.0	warp	0.2.0	2023-05-02T21:45:01Z	ca56ae20ea49293aca73173f70ad1039	/workspace/rst/cache_R_4_3/library/warp/0.2.0/ca56ae20ea49293aca73173f70ad1039/warp	available
 4.3.0	webshot	0.5.4	2023-05-03T02:51:18Z	a16d547663fbb33aa24948ca4a86dae2	/workspace/rst/cache_R_4_3/library/webshot/0.5.4/a16d547663fbb33aa24948ca4a86dae2/webshot	available
 4.3.0	whisker	0.4.1	2023-05-02T21:13:57Z	6b1b08600345ebce9bfc16946c1bdc0e	/workspace/rst/cache_R_4_3/library/whisker/0.4.1/6b1b08600345ebce9bfc16946c1bdc0e/whisker	available

@@ -12,7 +12,7 @@ conflict_prefer("count", "dplyr")
 # use this section to set graphical themes, color palettes, etc.
 
 # graphical parameters####
-theme_set(theme_cowplot(font_size = 10))
+theme_set(theme_cowplot(font_size = 18, line_size = 1))
 
 
 # show_col(pal_npg("nrc")(10))
@@ -69,6 +69,9 @@ nk_genes_palette <- NK_genes |> group_by(label) |> summarise() |> mutate(col = b
 colData(cds_main)$timepoint_merged_1 <- recode(colData(cds_main)$timepoint_merged, "baseline" = "1",
                                                "3yrs|btk_clone" = "2",
                                                "5yrs|relapse" = "3")
+colData(cds_main)$timepoint_merged_2 <- recode(colData(cds_main)$timepoint_merged, "baseline" = "Timepoint 1",
+                                               "3yrs|btk_clone" = "Timepoint 2",
+                                               "5yrs|relapse" = "Timepoint 3")
 
 colData(cds_main)$patient_type1 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "responsive")
 colData(cds_main)$patient_type2 <- recode(colData(cds_main)$patient_type, "BTK" = "resistant", "MRD" = "sensitive")
