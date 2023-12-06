@@ -12,7 +12,7 @@ conflict_prefer("count", "dplyr")
 # use this section to set graphical themes, color palettes, etc.
 
 # graphical parameters####
-theme_set(theme_cowplot(font_size = 18, line_size = 1))
+theme_set(theme_cowplot())
 
 
 # show_col(pal_npg("nrc")(10))
@@ -21,7 +21,10 @@ experimental_group_palette <- c(
   "BTK" = "#DC0000",
   "responsive" = "#3C5488",
   "sensitive" = "#3C5488",
-  "resistant" = "#DC0000"
+  "resistant" = "#DC0000",
+  "1" = "white",
+  "2" = "grey80",
+  "3" = "black"
 )
 
 jitter_alpha_fill <- 0.2
@@ -95,26 +98,6 @@ seurat_l2_leiden_consensus <- bb_cellmeta(cds_main) |>
 colData(cds_main)$seurat_l2_leiden_consensus <- recode(colData(cds_main)$leiden, !!!seurat_l2_leiden_consensus)
 colData(cds_main)$seurat_l2_leiden_consensus <- as.character(colData(cds_main)$seurat_l2_leiden_consensus)
 
-colData(cds_main)$leiden_assignment_binned_2 <- recode(colData(cds_main)$leiden,
-                                                "24" = "inflammatory",
-                                                "20" = "stressed",
-                                                "27" = "CLL-like",
-                                                "3" = "CLL-like",
-                                                "16" = "CLL-like",
-                                                "40" = "CLL-like",
-                                                "29" = "CLL-like",
-                                                "5" = "CLL-like",
-                                                "6" = "CLL-like",
-                                                "2" = "CLL-like",
-                                                "4" = "CLL-like",
-                                                "9" = "CLL-like",
-                                                "10" = "CLL-like",
-                                                "11" = "CLL-like",
-                                                "1" = "CLL-like",
-                                                "32" = "New England",
-                                                "21" = "New England",
-                                                "34" = "CLL-like"
-                                                )
 
 network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/new_figs")
 network_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")

@@ -1,15 +1,3 @@
-
-# global umap partition_assignment ------------------------
-bb_cellmeta(cds_main) |> glimpse()
-umap_partition_assignment <- bb_var_umap(
-  obj = cds_main,
-  var = "partition_assignment",
-  foreground_alpha = 0.1,
-  rasterize = TRUE,
-  overwrite_labels = TRUE
-)
-umap_partition_assignment + bb_var_umap(cds_main, "seurat_celltype_l1", rasterize = TRUE)
-
 # reference annotation barchart -------------------------------------------
 reference_anno_barchart <- bb_cellmeta(cds_main) |> 
   count(partition_assignment, seurat_celltype_l1) |>
@@ -21,24 +9,6 @@ reference_anno_barchart <- bb_cellmeta(cds_main) |>
 
 
 
-# B cell umap density faceted--------------------------------
-umap_density <- 
-  bb_var_umap(
-    obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
-    var = "density",
-    sample_equally = TRUE,
-    cell_size = 1,
-    nbin = 100,
-    facet_by = c("patient_type2", "timepoint_merged_1"),
-    rows = vars(patient_type2), 
-    cols = vars(timepoint_merged_1),
-    foreground_alpha = 0.6, 
-    rasterize = TRUE
-  ) +
-  theme(panel.background = element_rect(color = "grey80")) +
-  theme(legend.justification = "center") +
-  labs(color = "Cell\nDensity")
-umap_density
 
 # leiden umap -----------------------------------------------
 umap_leiden_l1 <-
@@ -52,16 +22,6 @@ umap_leiden_l1 <-
     foreground_alpha = 0.2
   ) + panel_border()
 
-# subcluster_umap-----------------------------------
-umap_subcluster <- 
-  bb_var_umap(
-    obj = cds_main[,colData(cds_main)$partition_assignment == "B"],
-    var = "leiden_assignment_binned_renamed",
-    cell_size = 1,
-    foreground_alpha = 0.1,
-    overwrite_labels = TRUE,
-    group_label_size = 4
-  ) 
 
 # volcano plot --------------------
 
@@ -113,138 +73,6 @@ volcano_BTK_bcells <-
                                                pull(log2FoldChange))))))
 volcano_BTK_bcells
 
-# b cell subpopulation gene_expression heatmap ------------------------------
-
-dotplot_markers <- c(
-  "FCER2",
-  "TCL1A",
-  "BTG1",
-  "CD52",
-  "NFKBIA",
-  "DUSP1",
-  "LTB",
-  "FOS",
-  "JUN",
-  "S100A6",
-  "HLA-A",
-  "HLA-B",
-  "HLA-C",
-  "HLA-E",
-  "HLA-DRA",
-  "HLA-DQA1",
-  "HLA-DMA",
-  # "MALAT1",
-  # "PIM3",
-  # "MAP3K8",
-  # "RELB",
-  "CNTNAP2",
-  "CXXC5",
-  # "ITGB1",
-  "RAC2",
-  "TXNIP"
-  # "KLF6"
-)
-
-
-
-# cds_main_bcell_subpop_top_markers <- monocle3::top_markers(cds = filter_cds(cds_main, 
-#                                                                             cells = bb_cellmeta(cds_main) |> 
-#                                                                               filter(partition_assignment == "B"),
-#                                                                             genes = bb_rowmeta(cds_main) |> 
-#                                                                               filter(gene_short_name %notin% blaseRdata::hg38_remove_genes)), 
-#                                                            group_cells_by = "leiden_assignment_binned_2", cores = 24)
-# cds_main_bcell_subpop_top_markers |> View()
-subpop_top_markers_mat <- scale(t(as.matrix(aggregate_gene_expression(cds = cds_main[rowData(cds_main)$gene_short_name %in% (cds_main_bcell_subpop_top_markers %>% pull(gene_short_name)),
-                                         colData(cds_main)$partition_assignment == "B"],
-                          cell_group_df = 
-                            colData(cds_main) %>%
-                            as_tibble(rownames = "cell") %>%
-                            filter(partition_assignment == "B") %>%
-                            select(cell, cell_group = leiden_assignment_binned_renamed),
-                          ))))
-
-new_colnames <- left_join(tibble(id = colnames(subpop_top_markers_mat)),
-          rowData(cds_main) %>%
-            as_tibble() %>%
-            select(id, gene_short_name)) %>%
-  pull(gene_short_name)
-colnames(subpop_top_markers_mat) <- new_colnames
-
-col_fun_heatmap_topmarkers <- 
-  colorRamp2(
-    breaks = c(min(subpop_top_markers_mat),
-               0,
-               max(subpop_top_markers_mat)),
-    colors = heatmap_3_colors
-  )
-
-tm_anno <- columnAnnotation(link =  anno_mark(
-  at = which(colnames(subpop_top_markers_mat) %in% dotplot_markers),
-  labels = colnames(subpop_top_markers_mat)[colnames(subpop_top_markers_mat) %in% dotplot_markers],
-  labels_gp = gpar(fontsize = 14),
-  padding = 0
-))
-
-
-subpop_top_markers_heatmap <- 
-  grid.grabExpr(draw(Heatmap(
-    matrix = subpop_top_markers_mat,
-    col = col_fun_heatmap_topmarkers,
-    name = "Expression",
-    column_dend_height = unit(3,"mm"), 
-    row_dend_width = unit(3,"mm"),
-    row_names_gp = gpar(fontsize = 14),
-    show_column_names = FALSE,
-    column_dend_side = "bottom",
-    top_annotation = tm_anno,
-    heatmap_legend_param = list(title_gp = gpar(fontsize = 18), direction = "horizontal"),
-  ), heatmap_legend_side = "bottom"), wrap = TRUE)
-plot_grid(subpop_top_markers_heatmap)
-
-# population fold change plot-----------------------------------------------------------
-normalized_leiden_counts <- 
-  colData(cds_main) %>%
-  as_tibble() %>%
-  filter(partition_assignment == "B") %>%
-  group_by(patient, leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type1) %>%
-  summarise(n = n()) %>%
-  left_join(colData(cds_main) %>%
-              as_tibble() %>%
-              group_by(specimen) %>%
-              summarise(specimen_total = n())) %>%
-  mutate(overall_total = nrow(colData(cds_main))) %>%
-  mutate(normalized_count = n*overall_total/specimen_total/2) %>%
-  select(leiden_assignment_binned_renamed, specimen, timepoint_merged_1, patient_type1, normalized_count)
-
-cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
-  pivot_wider(names_from = leiden_assignment_binned_renamed, values_from = normalized_count, values_fill = 1) %>%
-  mutate(btk_to_other_ratio = (`CLL-like`)/(stressed + inflammatory)) %>%
-  mutate(log2_ratio = log2(btk_to_other_ratio)) %>%
-  ggplot(mapping = aes(x = patient_type1, y = log2_ratio, color = patient_type1, fill = patient_type1)) +
-  geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
-  facet_wrap(facets = vars(timepoint_merged_1)) +
-  scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
-  scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
-  theme(strip.background = element_blank()) +
-  theme(panel.background = element_rect(color = "grey80")) +
-  theme(legend.position = "none") +
-  stat_summary(
-    fun.data = data_summary_mean_se,
-    color = summarybox_color,
-    size = summarybox_size,
-    width = summarybox_width,
-    alpha = summarybox_alpha,
-    geom = summarybox_geom, 
-    show.legend = FALSE
-  ) +
-  stat_compare_means(method = "wilcox", label = "p.signif", label.x.npc = "center", label.y = 16, show.legend = FALSE) +
-  scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(CLL-like:other)", color = "Patient Type", fill = "Patient Type", x = NULL) +
-  theme(axis.title.y.left = ggtext::element_markdown()) + 
-  theme(axis.text.x.bottom = element_blank()) +
-  theme(axis.ticks.x.bottom = element_blank()) +
-  theme(legend.position = "bottom", legend.justification = "center")
-cluster_proportion_ratio_plot
 
 # bb_cluster_representation2(obj = filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "B", timepoint_merged_1 == "3")), cluster_var = "leiden_assignment_binned_renamed", sample_var = "patient", comparison_var = "patient_type1",comparison_levels = c("responsive", "resistant"), sig_val = "PValue")
 # bb_cellmeta(cds_main) |> count(patient_type1)
