@@ -1,30 +1,36 @@
-# source("R/configs.R")
-# source("R/fig_1_staging.R")
+source("R/dependencies.R")
+source("R/configs.R")
+source("R/fig_staging/umap_partition_assignment.R")
+source("R/fig_staging/umap_density.R")
+source("R/fig_staging/cell_representation_barchart.R")
+source("R/fig_staging/umap_da_score.R")
+source("R/fig_staging/umap_leiden_enrichment.R")
+source("R/fig_staging/leiden_enrichment_tm_hm.R")
 
 fig_1_top <-
   plot_grid(
     umap_partition_assignment,
-    NULL,
+    density,
     ncol = 2,
-    rel_widths = c(4,1),
-    labels = c("A","")
+    rel_widths = c(1,1),
+    labels = c("A","B")
     )
 
 fig_1_mid1 <- 
   plot_grid(
-    volcano_BTK_bcells,
-    umap_subcluster,
+    cell_representation_barchart,
+    umap_leiden_enrichment,
     NULL,
-    labels = c("B","C", ""),
+    labels = c("B","C"),
     align = "h",
     axis = "b",
-    ncol = 3
-  )
+    ncol = 2  
+    )
 
-subpop_top_markers_heatmap_alt <- plot_grid(subpop_top_markers_heatmap) + theme(plot.margin = unit(c(0,5,0,0), "mm"))    
+leiden_enrichment_tm_hm_alt <- plot_grid(leiden_enrichment_tm_hm) + theme(plot.margin = unit(c(0,5,0,0), "mm"))    
 fig_1_mid2 <- 
   plot_grid(
-    subpop_top_markers_heatmap_alt,
+    leiden_enrichment_tm_hm_alt,
     labels = c("D"),
     align = "h",
     axis = "b",
@@ -54,8 +60,8 @@ fig_1 <-
 
 save_plot(
  plot = fig_1,
- # filename = "test.png",
- filename = fs::path(network_out, "fig_1.png"),
+ filename = "test.png",
+ # filename = fs::path(network_out, "fig_1.png"),
  base_width = 7.5,
  base_height = 9.75
 )
