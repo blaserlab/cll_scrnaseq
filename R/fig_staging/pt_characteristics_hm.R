@@ -67,36 +67,48 @@ col_fun_relapse_vaf <-
   ),
   colors = c("transparent", "darkmagenta"))
 
-pt_char_anno <- ComplexHeatmap::HeatmapAnnotation(df = pt_char_anno_df, 
-                                                  which = "column",
-                                                  annotation_label = c("patient",
-                                                                       "patient type",
-                                                                       "timepoint",
-                                                                       "gender",
-                                                                       "age",
-                                                                       "IGHV status",
-                                                                       "complex karyotype",
-                                                                       "del17p",
-                                                                       "del11q",
-                                                                       "del13p",
-                                                                       "tri12",
-                                                                       "BTK C418S VAF: timepoint 2",
-                                                                       "BTK C418S VAF: timepoint 3"),
-                                                  col = list(IGHV_status = c("M" = "black", "U" = "white"),
-                                                             complex_karyotype = c("yes" = "black", "no" = "white", "unknown" = "grey80"),
-                                                             timepoint_merged_1 = timepoint_palette,
-                                                             del17p = c(`FALSE` = "white", `TRUE` = "black"),
-                                                             del11q = c(`FALSE` = "white", `TRUE` = "black"),
-                                                             gender = c("F" = "pink", "M" = "blue"),
-                                                             del13p = c(`FALSE` = "white", `TRUE` = "black"),
-                                                             tri12 = c(`FALSE` = "white", `TRUE` = "black"),
-                                                             patient_type2 = experimental_group_palette, 
-                                                             patient = pt_colors,
-                                                             age_at_ibr_start = col_fun_pt_age,
-                                                             btk_clone_vaf_pct = col_fun_btk_clone_vaf,
-                                                             relapse_vaf_pct = col_fun_relapse_vaf
-                                                             
-                                                  ))
+pt_char_anno <-
+  ComplexHeatmap::HeatmapAnnotation(
+    df = pt_char_anno_df,
+    which = "column",
+    annotation_legend_param = list(labels_gp = gpar(fontsize = 8),title_gp = gpar(fontsize = 10, font = 2)),
+    annotation_name_gp = gpar(fontsize = 10),
+    annotation_label = c(
+      "patient",
+      "response",
+      "timepoint",
+      "gender",
+      "age",
+      "IGHV status",
+      "CK",
+      "del17p",
+      "del11q",
+      "del13p",
+      "tri12",
+      "VAF: t2",
+      "VAF: t3"
+    ),
+    col = list(
+      IGHV_status = c("M" = "black", "U" = "white"),
+      complex_karyotype = c(
+        "yes" = "black",
+        "no" = "white",
+        "unknown" = "grey80"
+      ),
+      timepoint_merged_1 = timepoint_palette,
+      del17p = c(`FALSE` = "white", `TRUE` = "black"),
+      del11q = c(`FALSE` = "white", `TRUE` = "black"),
+      gender = c("F" = "pink", "M" = "blue"),
+      del13p = c(`FALSE` = "white", `TRUE` = "black"),
+      tri12 = c(`FALSE` = "white", `TRUE` = "black"),
+      patient_type2 = experimental_group_palette,
+      patient = pt_colors,
+      age_at_ibr_start = col_fun_pt_age,
+      btk_clone_vaf_pct = col_fun_btk_clone_vaf,
+      relapse_vaf_pct = col_fun_relapse_vaf
+      
+    )
+  )
 
 col_fun_pt_char <- circlize::colorRamp2(breaks = c(min(pt_char_mat),max(pt_char_mat)), colors = c("transparent", "purple4"))
 
@@ -108,9 +120,11 @@ pt_characteristics_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(
   name = "Log10 Cells",
   column_dend_side = "bottom",
   show_column_names = FALSE,
-  top_annotation = pt_char_anno
+  top_annotation = pt_char_anno,
+  row_names_gp = gpar(fontsize = 10), 
+  heatmap_legend_param = list(direction = "horizontal"),
   
-), merge_legend = TRUE), wrap = TRUE, width = unit(5, "in"), height = unit(5, "in")) 
+), merge_legend = FALSE, 
+heatmap_legend_side = "bottom"), wrap = TRUE, width = unit(5, "in"), height = unit(5, "in")) 
 
-plot_grid(pt_characteristics_hm)
 

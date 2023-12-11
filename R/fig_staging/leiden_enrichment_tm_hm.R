@@ -1,6 +1,4 @@
 
-cds_main_leiden_comparison_tm |> View()
-
 # b cell subpopulation gene_expression heatmap ------------------------------
 
 dotplot_markers <- c(
@@ -62,22 +60,23 @@ col_fun_heatmap_topmarkers <-
 tm_anno <- columnAnnotation(link =  anno_mark(
   at = which(colnames(subpop_top_markers_mat) %in% dotplot_markers),
   labels = colnames(subpop_top_markers_mat)[colnames(subpop_top_markers_mat) %in% dotplot_markers],
-  labels_gp = gpar(fontsize = 14),
+  labels_gp = gpar(fontsize = 8),
   padding = 0
 ))
 
 
-subpop_top_markers_heatmap <- 
+leiden_enrichment_tm_hm <- 
   grid.grabExpr(draw(Heatmap(
     matrix = subpop_top_markers_mat,
     col = col_fun_heatmap_topmarkers,
     name = "Expression",
     column_dend_height = unit(3,"mm"), 
     row_dend_width = unit(3,"mm"),
-    row_names_gp = gpar(fontsize = 14),
+    row_names_gp = gpar(fontsize = 10),
     show_column_names = FALSE,
     column_dend_side = "bottom",
     top_annotation = tm_anno,
-    heatmap_legend_param = list(title_gp = gpar(fontsize = 18), direction = "horizontal"),
-  ), heatmap_legend_side = "bottom"), wrap = TRUE)
-plot_grid(subpop_top_markers_heatmap)
+    heatmap_legend_param = list(title_gp = gpar(fontsize = 10)),
+  )), wrap = TRUE)
+
+plot_grid(leiden_enrichment_tm_hm)

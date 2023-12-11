@@ -12,7 +12,7 @@ conflict_prefer("count", "dplyr")
 # use this section to set graphical themes, color palettes, etc.
 
 # graphical parameters####
-theme_set(theme_cowplot())
+theme_set(theme_cowplot(font_size = 10))
 
 
 # show_col(pal_npg("nrc")(10))
@@ -98,6 +98,10 @@ seurat_l2_leiden_consensus <- bb_cellmeta(cds_main) |>
 colData(cds_main)$seurat_l2_leiden_consensus <- recode(colData(cds_main)$leiden, !!!seurat_l2_leiden_consensus)
 colData(cds_main)$seurat_l2_leiden_consensus <- as.character(colData(cds_main)$seurat_l2_leiden_consensus)
 
+colData(cds_main)$leiden_comparison_renamed <- recode(colData(cds_main)$leiden_comparison, 
+                                                      "20" = "stressed",
+                                                      "24" = "inflammatory 1",
+                                                      "34" = "inflammatory 2")
 
 network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/new_figs")
 network_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")

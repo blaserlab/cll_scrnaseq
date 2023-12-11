@@ -1,5 +1,5 @@
-source("R/dependencies.R")
-source("R/configs.R")
+# source("R/dependencies.R")
+# source("R/configs.R")
 source("R/fig_staging/umap_partition_assignment.R")
 source("R/fig_staging/umap_density.R")
 source("R/fig_staging/cell_representation_barchart.R")
@@ -10,42 +10,42 @@ source("R/fig_staging/leiden_enrichment_tm_hm.R")
 fig_1_top <-
   plot_grid(
     umap_partition_assignment,
-    density,
+    umap_density,
     ncol = 2,
-    rel_widths = c(1,1),
+    rel_widths = c(0.67,1),
     labels = c("A","B")
     )
 
 fig_1_mid1 <- 
   plot_grid(
     cell_representation_barchart,
+    umap_da_score,
     umap_leiden_enrichment,
-    NULL,
-    labels = c("B","C"),
+    labels = c("C","D", "E"),
     align = "h",
     axis = "b",
-    ncol = 2  
+    ncol = 3,
+    rel_widths = c(0.67, 1, 1)
     )
 
 leiden_enrichment_tm_hm_alt <- plot_grid(leiden_enrichment_tm_hm) + theme(plot.margin = unit(c(0,5,0,0), "mm"))    
 fig_1_mid2 <- 
   plot_grid(
     leiden_enrichment_tm_hm_alt,
-    labels = c("D"),
+    labels = c("F"),
     align = "h",
     axis = "b",
     ncol = 1
   )
 
 
-module_heatmap_bcells_alt <- plot_grid(module_heatmap_bcells) + theme(plot.margin = unit(c(0, 5, 0, 0), "mm"))
 fig_1_bottom <- 
   plot_grid(
-    cluster_proportion_ratio_plot,
-    module_heatmap_bcells_alt,
+    NULL,
+    NULL,
     ncol = 2,
     rel_widths = c(1,1),
-    labels = c("E","F")
+    labels = c("G","H")
   )
 
 fig_1 <- 
@@ -55,7 +55,7 @@ fig_1 <-
     fig_1_mid2,
     fig_1_bottom,
     nrow = 4,
-    rel_heights = c(1.5,1,0.8,1.2)
+    rel_heights = c(1,1,1,1)
   )
 
 save_plot(

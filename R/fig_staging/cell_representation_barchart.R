@@ -31,4 +31,5 @@ cell_representation_barchart <- ggplot(cell_representation_data,
   labs(y = "Log<sub>2</sub> Fold Change", x = "Cluster") +
   panel_border() +
   theme(axis.title.y = ggtext::element_markdown()) +
-  theme(strip.background = element_blank())
+  theme(strip.background = element_blank()) +
+  theme(legend.position = "top", legend.justification = "center")
