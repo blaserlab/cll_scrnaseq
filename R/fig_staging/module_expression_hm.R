@@ -47,4 +47,4 @@ module_heatmap_bcells <-
             heatmap_legend_param = list(title_gp = gpar(fontsize = 10))
               ), merge_legend = TRUE), wrap = TRUE,width = 6)
 
-# plot_grid(module_heatmap_bcells)
+plot_grid(module_heatmap_bcells)

@@ -19,7 +19,7 @@ normalized_leiden_counts <-
 
 cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
   pivot_wider(names_from = leiden_comparison_renamed, values_from = normalized_count, values_fill = 1) %>%
-  mutate(btk_to_other_ratio = (stressed + `inflammatory 1`+ `inflammatory 2` )/(other)) %>%
+  mutate(btk_to_other_ratio = (`Ig-producing`/(`Inflammatory 1` + `Inflammatory 2` + Stressed))) %>%
   mutate(log2_ratio = log2(btk_to_other_ratio)) %>%
   ggplot(mapping = aes(x = patient_type2, y = log2_ratio, color = patient_type2, fill = patient_type2)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
@@ -44,8 +44,14 @@ cluster_proportion_ratio_plot <- normalized_leiden_counts %>%
                      label.y = 16, 
                      show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(inflammatory + stressed:other)", color = "Patient Type", fill = "Patient Type", x = NULL) +
+  labs(y = "log<sub>2</sub>(Ig-producing:other)", 
+       color = NULL, 
+       fill = NULL, 
+       x = NULL) +
   theme(axis.title.y.left = ggtext::element_markdown()) + 
   theme(axis.text.x.bottom = element_blank()) +
   theme(axis.ticks.x.bottom = element_blank()) +
-  theme(legend.position = "bottom", legend.justification = "center")
+  theme(legend.position = "top", 
+        legend.justification = "center") +
+  guides(fill = guide_legend(ncol = 1, override.aes = list(size = 2)))
+cluster_proportion_ratio_plot

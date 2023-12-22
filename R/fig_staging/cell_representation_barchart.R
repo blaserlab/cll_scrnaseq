@@ -18,18 +18,26 @@ cell_representation_data <- map_dfr(.x = c("Timepoint 1", "Timepoint 2", "Timepo
       }
     )
 
-cell_representation_barchart <- ggplot(cell_representation_data,
-       aes(
-         x = fct_relevel(cluster, c("B", "T", "NK", "Mono")),
-         y = logFC,
-         fill = enriched
-       )) +
+
+
+cell_representation_barchart <-
+  ggplot(
+    cell_representation_data |> mutate(timepoint_1 = str_remove(timepoint, "Timepoint ")),
+    aes(
+      x = fct_relevel(cluster, c("B", "T", "NK", "Mono")),
+      y = logFC,
+      fill = enriched
+    )
+  ) +
   geom_bar(color = "black", stat = "identity") +
-  geom_text(mapping = aes(x = cluster, y = texty, label = sig)) +
+  geom_text(mapping = aes(x = cluster, y = texty, label = sig),
+            nudge_y = 0.25) +
   scale_fill_manual(values = experimental_group_palette) +
-  facet_wrap( ~ timepoint) +
-  labs(y = "Log<sub>2</sub> Fold Change", x = "Cluster") +
+  facet_wrap(~ timepoint_1) +
+  labs(y = "Log<sub>2</sub> Fold Change", x = NULL, fill = NULL) +
   panel_border() +
   theme(axis.title.y = ggtext::element_markdown()) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   theme(strip.background = element_blank()) +
   theme(legend.position = "top", legend.justification = "center")
+cell_representation_barchart

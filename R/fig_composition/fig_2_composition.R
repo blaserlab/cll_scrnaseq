@@ -1,38 +1,47 @@
-fig_2_top <- plot_grid(
-  tcell_subpop_umap,
-  tcell_subpop_genebub,
-  ncol = 2,
-  align = "h", 
-  axis = "b",
-  rel_widths = c(1,1)
-)
+# source("R/dependencies.R")
+# source("R/configs.R")
 
-fig_2_mid <- plot_grid(
-  cluster_enrichment_barchart,
-  treg_pct_plot,
-  tcr_diversity_plot,
-  ncol = 3,
-  rel_widths = c(1,1,1)
-)
+source_all_figs <- TRUE
+# source_all_figs <- FALSE
 
-fig_2_bot <- plot_grid(
-  exh_genebub,
-  NULL,
-  ncol =  2,
-  rel_widths = c(1,1)
-)
+if (source_all_figs) {
+  source("R/fig_staging/module_expression_hm.R")
+  source("R/fig_staging/mod4_enrichment_plot.R")
+  source("R/fig_staging/mod4_agg_expr.R")
+}
 
-fig_2 <- plot_grid(
-  fig_2_top,
-  fig_2_mid,
-  fig_2_bot,
-  ncol = 1,
-  rel_heights = c(1,1,1)
-)
+module_heatmap_bcells_alt <-
+  plot_grid(module_heatmap_bcells) + theme(plot.margin = unit(c(0.25, 1.5, 0.25, 0.5), "in"))
+
+fig_2_top <-
+  plot_grid(module_heatmap_bcells_alt,
+            ncol = 1,
+            labels = c("A"))
+
+fig_2_mid <-
+  plot_grid(
+    mod4_agg_expr_violin,
+    NULL,
+    ncol = 2,
+    rel_widths = c(3, 1),
+    labels = c("B")
+  )
+
+
+fig_2_bottom <-
+  plot_grid(mod4_enrichment_plot,
+            labels = "C")
+
+fig_2 <- plot_grid(fig_2_top,
+                   fig_2_mid,
+                   fig_2_bottom,
+                   ncol = 1,
+                   rel_heights = c(0.6, 0.4, 0.6))
 
 save_plot(
-  fig_2,
-  filename = fs::path(network_out, "fig_2.png"),
+  plot = fig_2,
+  # filename = "fig_2.png",
+  filename = fs::path(network_out, "fig_2.pdf"),
   base_width = 7.5,
   base_height = 9.75
 )

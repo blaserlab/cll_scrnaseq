@@ -4,6 +4,7 @@ umap_partition_assignment <- bb_var_umap(
   var = "partition_assignment",
   foreground_alpha = 0.05,
   rasterize = TRUE,
-  overwrite_labels = TRUE
+  overwrite_labels = TRUE,
+  palette = experimental_group_palette
 )
-umap_partition_assignment + bb_var_umap(cds_main, "seurat_celltype_l1", rasterize = TRUE)
+umap_partition_assignment

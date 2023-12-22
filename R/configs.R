@@ -22,9 +22,23 @@ experimental_group_palette <- c(
   "responsive" = "#3C5488",
   "sensitive" = "#3C5488",
   "resistant" = "#DC0000",
+  "unenriched" = "green4",
   "1" = "white",
   "2" = "grey80",
-  "3" = "black"
+  "3" = "black",
+  "B" = brewer.pal(n = 8, name = "Set1")[1],
+  "T" = brewer.pal(n = 8, name = "Set1")[2],
+  "NK" = brewer.pal(n = 8, name = "Set1")[3],
+  "Mono" = brewer.pal(n = 8, name = "Set1")[4],
+  "cDC" = brewer.pal(n = 8, name = "Set1")[5],
+  "pDC" = brewer.pal(n = 8, name = "Set1")[6],
+  "HSPC" = brewer.pal(n = 8, name = "Set1")[7],
+  "Prolif" = brewer.pal(n = 8, name = "Set1")[8],
+  "Inflammatory 1" = brewer.pal(n = 8, name = "Set2")[1],
+  "Inflammatory 2" = brewer.pal(n = 8, name = "Set2")[2],
+  "Stressed" = brewer.pal(n = 8, name = "Set2")[3],
+  "Ig-producing" = brewer.pal(n = 8, name = "Set2")[4]
+  
 )
 
 jitter_alpha_fill <- 0.2
@@ -99,11 +113,12 @@ colData(cds_main)$seurat_l2_leiden_consensus <- recode(colData(cds_main)$leiden,
 colData(cds_main)$seurat_l2_leiden_consensus <- as.character(colData(cds_main)$seurat_l2_leiden_consensus)
 
 colData(cds_main)$leiden_comparison_renamed <- recode(colData(cds_main)$leiden_comparison, 
-                                                      "20" = "stressed",
-                                                      "24" = "inflammatory 1",
-                                                      "34" = "inflammatory 2")
+                                                      "20" = "Stressed",
+                                                      "24" = "Inflammatory 1",
+                                                      "34" = "Inflammatory 2",
+                                                      "other" = "Ig-producing")
 
-network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/figs/new_figs")
+network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/r_out/")
 network_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
 paper_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
 
