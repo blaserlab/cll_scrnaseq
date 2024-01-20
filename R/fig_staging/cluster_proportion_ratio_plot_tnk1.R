@@ -1,9 +1,11 @@
+# comparing the ratio of cells in the leiden enrichment clusters in sensitive and resistant patients by timepoint
 
-cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
-  filter(partition_assignment  == "B") |> 
-  count(patient, sample, leiden_comparison_renamed, patient_type2, timepoint_merged_1) |> 
-  pivot_wider(names_from = leiden_comparison_renamed, values_from = n, values_fill = 1) %>%
-  mutate(ratio = (`Ig-producing`/(`Inflammatory 1` + `Inflammatory 2` + Stressed))) %>%
+cluster_proportion_ratio_plot_tnk1 <- bb_cellmeta(cds_main) %>%
+  filter(partition_assignment  %in% c("T", "NK")) |> 
+  filter(leiden_enrichment != "unenriched") |> 
+  count(patient, sample, leiden_enrichment, patient_type2, timepoint_merged_1) |> 
+  pivot_wider(names_from = leiden_enrichment, values_from = n, values_fill = 1) %>%
+  mutate(ratio = sensitive/resistant) %>%
   mutate(log2_ratio = log2(ratio)) %>%
   ggplot(mapping = aes(x = patient_type2, y = log2_ratio, color = patient_type2, fill = patient_type2)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
@@ -22,13 +24,13 @@ cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
     geom = summarybox_geom, 
     show.legend = FALSE
   ) +
-  stat_compare_means(method = "wilcox", 
+  stat_compare_means(method = "t.test", 
                      label = "p.signif", 
                      label.x.npc = "center", 
-                     label.y = 16, 
+                     label.y = 1, 
                      show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(Ig-producing:other)", 
+  labs(y = "log<sub>2</sub>(IBS-enriched:other)", 
        color = NULL, 
        fill = NULL, 
        x = NULL) +
@@ -38,3 +40,4 @@ cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
   theme(legend.position = "top", 
         legend.justification = "center") +
   guides(fill = guide_legend(ncol = 1, override.aes = list(size = 2)))
+cluster_proportion_ratio_plot_tnk1

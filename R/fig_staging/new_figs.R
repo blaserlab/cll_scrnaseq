@@ -71,17 +71,6 @@ volcano_BTK_bcells
 # module expression heatmaps --------------------------------
 #annotation here
 
-# tcell subpop umap -------------------------------------
-tcell_subpop_umap <-
-  bb_var_umap(
-    cds_main[, colData(cds_main)$partition_assignment == "T"],
-    "seurat_l2_leiden_consensus",
-    overwrite_labels = T,
-    group_label_size = 4,
-    foreground_alpha = 0.2
-  )
-tcell_subpop_umap
-
 # T cell genes---------------------------------------------
 
 {
@@ -166,9 +155,9 @@ tcell_genexp_hm <-
     ), heatmap_legend_side = "bottom", annotation_legend_side = "bottom"
   ),
   wrap = TRUE)
+plot_grid(tcell_genexp_hm)
 
-
-# NK cell genes----------------------------------------
+ # NK cell genes----------------------------------------
 
 
 {
@@ -258,70 +247,9 @@ nk_genexp_hm <-
   wrap = TRUE)
 
   
+plot_grid(nk_genexp_hm)
 
 
-
-# treg pct plot -----------------------------------------
-treg_ratio_tbl <- left_join(
-  colData(cds_main) %>%
-    as_tibble() %>%
-    filter(partition_assignment == "T") %>%
-    group_by(specimen, patient, timepoint_merged_2, patient_type2) %>%
-    summarise(n_total_t = n()),
-  colData(cds_main) %>%
-    as_tibble() %>%
-    filter(seurat_l2_leiden_consensus == "Treg") %>%
-    group_by(specimen)  %>%
-    summarise(n_treg = n())
-) %>%
-  mutate(n_treg = replace_na(n_treg, 1)) %>%
-  mutate(treg_pct = n_treg / (n_total_t) * 100)
-
-
-
-
-treg_pct_plot <-
-  ggplot(
-    treg_ratio_tbl,
-    mapping = aes(
-      x = patient_type2,
-      y = treg_pct,
-      color = patient_type2,
-      fill = patient_type2
-    )
-  ) +
-  geom_jitter(width = jitter_width,
-              size = jitter_size,
-              shape = jitter_shape) +
-  scale_color_manual(values = experimental_group_palette) +
-  scale_fill_manual(values = alpha(alpha = 0.4, colour = experimental_group_palette)) +
-  coord_trans(y = "log10", clip = "off") +
-  scale_y_continuous(breaks = c(60, 20, 6, 2, 0.6, 0.2) / 2) +
-  annotation_logticks(scaled = F,
-                      sides = "l",
-                      outside = F) +
-  theme(legend.position = "none") +
-  facet_wrap(facets = vars(timepoint_merged_2)) +
-  stat_summary(
-    fun.data = data_summary_mean_se,
-    color = summarybox_color,
-    size = summarybox_size,
-    width = summarybox_width,
-    alpha = summarybox_alpha,
-    geom = summarybox_geom, 
-    show.legend = FALSE
-  ) +
-  stat_compare_means(method = "t.test",
-                     label = "p.signif",
-                     label.x.npc = 0.5, 
-                     show.legend = FALSE) +
-  theme(strip.background = element_blank()) + 
-  labs(y = "Percent T<sub>reg</sub>", color = "Patient Type", fill = "Patient Type", x = NULL) +
-  theme(axis.title.y.left = ggtext::element_markdown()) + 
-  theme(axis.text.x.bottom = element_blank()) +
-  # theme(axis.ticks.x.bottom = element_blank()) +
-  theme(legend.position = "bottom", legend.justification = "center")
-treg_pct_plot
 
 # tcr diversity plot -------------------------------
 tcr_diversity_plot <- bb_cellmeta(cds_main) |> 
@@ -352,33 +280,42 @@ tcr_diversity_plot <- bb_cellmeta(cds_main) |>
   theme(axis.text.x.bottom = element_blank()) +
   # theme(axis.ticks.x.bottom = element_blank()) +
   theme(legend.position = "bottom", legend.justification = "center")
+tcr_diversity_plot
+
+bb_cellmeta(cds_main) |> glimpse()
 
 
-# exhaustion marker gene bubbles ------------------------------
+bb_cellmeta(cds_main) |> 
+  filter(partition_assignment == "T") |> 
+  group_by(sample, timepoint_merged_2, patient_type2, seurat_l2_leiden_consensus) |> 
+  summarise(mean_tcr_copies = mean(tcr_clone_copies, na.rm = TRUE),
+            mean_tcr_proportion = mean(tcr_clone_proportion, na.rm = TRUE)) |> 
+  left_join(bb_cellmeta(cds_main) |> 
+              filter(partition_assignment == "T") |> 
+              count(sample, seurat_l2_leiden_consensus)) |> 
+  filter(!is.nan(mean_tcr_copies)) |>
+  mutate(corrected_tcr_copies = mean_tcr_copies/n) |> 
+  ggplot(aes(x = patient_type2, y = log10(corrected_tcr_copies))) + 
+  geom_jitter() + 
+  # facet_wrap(~timepoint_merged_2) + 
+  facet_grid(seurat_l2_leiden_consensus~timepoint_merged_2, scales = "free") +
+  stat_summary(
+    fun.data = data_summary_mean_se,
+    color = summarybox_color,
+    size = summarybox_size,
+    width = summarybox_width,
+    alpha = summarybox_alpha,
+    geom = summarybox_geom, 
+    show.legend = FALSE
+  ) +
+  stat_compare_means(method = "t.test",
+                     label = "p.format",
+                     label.x.npc = 0.5, 
+                     show.legend = FALSE) + 
+  panel_border()
+
+
+
+
+
 exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
-exh_bubdat <- bb_genebubbles(filter_cds(
-  cds_main,
-  cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "T")
-), genes = exhaustion_genes, 
-cell_grouping = c("seurat_l2_leiden_consensus", "timepoint_merged_2", "patient_type2"), return_value = "data")
-
-exh_genebub <- ggplot(exh_bubdat, aes(x = seurat_l2_leiden_consensus, y = gene_short_name, color = expression, size = proportion)) +
-  geom_point() +
-  scale_size_area() +
-  scale_color_viridis_c() + 
-  facet_grid(patient_type2 ~ timepoint_merged_2) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
-  panel_border() +
-  labs(x = NULL, y = NULL) +
-  theme(strip.background = element_blank()) +
-  theme(axis.text.y = element_text(face = "italic"))
-exh_genebub
-
-
-
-bb_gene_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "B")), bb_rowmeta(cds_main) |> filter(module == "4") |> select(gene_short_name, module))
-
-cds_main_leiden_comparison_tm |> filter(cell_group == "24")
-bb_rowmeta(cds_main) |> filter(module == "4") |> View()
-
-
