@@ -74,9 +74,9 @@ timepoint_palette <- c("1" = brewer.pal(3, "YlGn")[1],
                        "2" = brewer.pal(3, "YlGn")[2],
                        "3" = brewer.pal(3, "YlGn")[3])
 
-tcell_genes <- read_csv("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/queries/tcell_genes.csv")
+tcell_genes <- read_csv("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/queries/tcell_genes.csv")
 
-NK_genes <- read_csv("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/queries/NK_genes.csv") 
+NK_genes <- read_csv("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/queries/NK_genes.csv") 
 
 tcell_genes_palette <- tcell_genes |> group_by(label) |> summarise() |> mutate(col = brewer.pal(7, "Accent")) |> deframe()
 
@@ -118,9 +118,9 @@ colData(cds_main)$leiden_comparison_renamed <- recode(colData(cds_main)$leiden_c
                                                       "34" = "Inflammatory 2",
                                                       "other" = "Ig-producing")
 
-network_out <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/r_out/")
-network_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
-paper_tables <- fs::path("/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
+network_out <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/r_out/")
+network_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
+paper_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
 
 # source local configs ----------------------------------------------------
 # these are sourced after main configs and will overwrite duplicate entries if

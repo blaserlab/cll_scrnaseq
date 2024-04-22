@@ -3,10 +3,17 @@
 #DOI: 10.1126/sciimmunol.aba7918
 #PMID: 31591533
 
-# tcell_leiden_enrichment_gsea_res |> filter(pathway %in% c("GSE26495_PD1HIGH_VS_PD1LOW_CD8_TCELL_DN",
-#                             "GSE26495_PD1HIGH_VS_PD1LOW_CD8_TCELL_UP")) |> unnest(cols = c(leadingEdge)) |> select(pathway, leadingEdge) |> View()
+tcell_leiden_encrichment_le <- tcell_leiden_enrichment_gsea_res |> filter(pathway %in% c("GSE26495_PD1HIGH_VS_PD1LOW_CD8_TCELL_DN",
+                            "GSE26495_PD1HIGH_VS_PD1LOW_CD8_TCELL_UP")) |> 
+  unnest(cols = c(leadingEdge)) |> 
+  select(pathway, leadingEdge)
 
-tcell_leiden_enrichment_examplegenes <- c("TOX", "PDCD1", "TCF7", "TBX21", "CD28", "GZMB", "NELL2", "PRF1", "KLRD1", "LTB", "CCR7", "SELL")
+tcell_leiden_enrichment_examplegenes <- c("TOX", "PDCD1", "TBX21", "GZMB", "PRF1", "KLRD1", "LTB", "TIGIT")
+# tcell_leiden_enrichment_examplegenes %in% tcell_leiden_encrichment_le$leadingEdge
+
+
+
+
 
 tcell_leiden_enrichment_genebubdat <- 
   bb_genebubbles(filter_cds(cds_main, 

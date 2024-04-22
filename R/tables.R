@@ -5,6 +5,18 @@ summarized_sequencing_metrics |>
   select(Patient = patient, `Ibrutinib Response` = patient_type2, Timepoint = timepoint_merged_1, `Pre-filter Cell Count` = cds_dim_cells, `Mean Reads per Cell`, `Fraction Reads in Cells`,  `Post-filter Cell Count` = n) |> 
   write_csv(fs::path(paper_tables, "table_S1.csv"))
 
+# T cell leiden enrichment gsea results ------------------------------
+tcell_leiden_enrichment_gsea_res |> 
+  mutate(leadingEdge = paste0(leadingEdge)) |> 
+  arrange(padj) |> 
+  write_csv(fs::path(paper_tables, "table_S3.csv"))
+
+# tcell leiden enrichment dge
+tcell_leiden_enrichment_pseudobulk_res$Result |> 
+  arrange(padj) |> 
+  write_csv(fs::path(paper_tables, "table_S2.csv"))
+  
+
 # cell  number calcs ----------------------
 bb_cellmeta(cds_main) |> count(sample) |> rstatix::get_summary_stats(n)
 
