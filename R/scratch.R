@@ -42,5 +42,6 @@ bb_cellmeta(cds_main) |>
   scale_colour_brewer(palette = "Paired")
 
 
+bb_gene_umap(cds_main, "CD19")
 
 
