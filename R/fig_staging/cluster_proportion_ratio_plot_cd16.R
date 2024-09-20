@@ -1,15 +1,13 @@
 # comparing the ratio of cells in the leiden enrichment clusters in sensitive and resistant patients by timepoint
 
-cluster_proportion_ratio_plot_tnk1 <- bb_cellmeta(cds_main) %>%
-  filter(partition_assignment  %in% c("T", "NK")) |> 
-  filter(leiden_enrichment != "unenriched") |> 
-  count(patient, sample, leiden_enrichment, patient_type2, timepoint_merged_1) |> 
-  pivot_wider(names_from = leiden_enrichment, values_from = n, values_fill = 1) %>%
-  mutate(ratio = sensitive/resistant) %>%
-  mutate(log2_ratio = log2(ratio)) %>%
-  ggplot(mapping = aes(x = patient_type2, y = log2_ratio, color = patient_type2, fill = patient_type2)) +
+cluster_proportion_plot_cd16 <- bb_cellmeta(cds_main) %>%
+  filter(seurat_l2_leiden_consensus == "CD16 Mono") |> 
+  count(patient, sample, cd16_da_response, patient_type2, timepoint_merged_2) |> 
+  pivot_wider(names_from = cd16_da_response, values_from = n, values_fill = 0) %>%
+  mutate(pct = sensitive/(unenriched + resistant + sensitive)*100) |> 
+  ggplot(mapping = aes(x = patient_type2, y = pct, color = patient_type2, fill = patient_type2)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
-  facet_wrap(facets = vars(timepoint_merged_1)) +
+  facet_wrap(facets = vars(timepoint_merged_2)) +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
   scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
   theme(strip.background = element_blank()) +
@@ -30,7 +28,7 @@ cluster_proportion_ratio_plot_tnk1 <- bb_cellmeta(cds_main) %>%
                      label.y.npc = 0.9, 
                      show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(IBS-enriched:IBR-enriched)", 
+  labs(y = "Percent IBS-enriched", 
        color = NULL, 
        fill = NULL, 
        x = NULL) +
@@ -40,4 +38,4 @@ cluster_proportion_ratio_plot_tnk1 <- bb_cellmeta(cds_main) %>%
   theme(legend.position = "top", 
         legend.justification = "center") +
   guides(fill = guide_legend(ncol = 1, override.aes = list(size = 2)))
-cluster_proportion_ratio_plot_tnk1
+cluster_proportion_plot_cd16

@@ -251,11 +251,12 @@ plot_grid(nk_genexp_hm)
 
 
 
-# tcr diversity plot -------------------------------
-tcr_diversity_plot <- bb_cellmeta(cds_main) |> 
-  group_by(patient_type2, sample, timepoint_merged_2) |> 
-  summarise(diversity = mean(specimen_tcr_shannon, na.rm = TRUE)) |> 
-  ggplot(aes(x = patient_type2, color = patient_type2, fill = patient_type2, y = diversity)) +
+
+
+
+clinical_flow_data |> 
+  mutate(population = recode(population, "CD 4" = "CD4")) |> 
+  ggplot(aes(x = patient_type, y = abs_mm3, fill = patient_type, color = patient_type)) +
   geom_jitter(width = jitter_width,
               size = jitter_size,
               shape = jitter_shape) +
@@ -269,33 +270,44 @@ tcr_diversity_plot <- bb_cellmeta(cds_main) |>
     alpha = summarybox_alpha,
     geom = summarybox_geom, 
     show.legend = FALSE
-  ) +
-  stat_compare_means(method = "t.test",
+  )+
+  stat_compare_means(method = "wilcox",
                      label = "p.signif",
-                     label.x.npc = 0.5, 
+                     label.x.npc = 0.5,
+                     label.y.npc = 0.8,
                      show.legend = FALSE) +
   theme(strip.background = element_blank()) +
-  facet_wrap(~timepoint_merged_2) +
-  labs(y = "TCR Diversity", color = "Patient Type", fill = "Patient Type", x = NULL) +
-  theme(axis.text.x.bottom = element_blank()) +
-  # theme(axis.ticks.x.bottom = element_blank()) +
-  theme(legend.position = "bottom", legend.justification = "center")
-tcr_diversity_plot
-
-bb_cellmeta(cds_main) |> glimpse()
+  facet_grid(population~timepoint_merged_2, scales = "free") + 
+  panel_border()
+ 
 
 
-bb_cellmeta(cds_main) |> 
-  filter(partition_assignment == "T") |> 
-  group_by(sample, timepoint_merged_2, patient_type2, seurat_l2_leiden_consensus) |> 
-  summarise(mean_tcr_copies = mean(tcr_clone_copies, na.rm = TRUE),
-            mean_tcr_proportion = mean(tcr_clone_proportion, na.rm = TRUE)) |> 
-  left_join(bb_cellmeta(cds_main) |> 
-              filter(partition_assignment == "T") |> 
-              count(sample, seurat_l2_leiden_consensus)) |> 
-  filter(!is.nan(mean_tcr_copies)) |>
-  mutate(corrected_tcr_copies = mean_tcr_copies/n) |> 
-  ggplot(aes(x = patient_type2, y = log10(corrected_tcr_copies))) + 
+
+
+
+
+
+
+shannon_diversity <- function(pop) {
+  n <- pop
+  N <- sum(pop)
+  p <- n/N
+  -sum(p*log(p))
+}
+
+# tcr diversity recalculated by subcluster ------------------------
+bb_cellmeta(cds_main) |>
+  group_by(sample, patient_type2, timepoint_merged_2) |>
+  summarise() |>
+  left_join(
+    bb_cellmeta(cds_main) |>
+      filter(partition_assignment == "T") |>
+      filter(!is.na(tcr_clone_copies)) |>
+      group_by(sample, seurat_l2_leiden_consensus) |>
+      summarize(tcr_shannon = shannon_diversity(tcr_clone_copies)),
+    by = join_by(sample)
+  ) |> 
+  ggplot(aes(x = patient_type2, fill = patient_type2, color = patient_type2, y = tcr_shannon)) + 
   geom_jitter() + 
   # facet_wrap(~timepoint_merged_2) + 
   facet_grid(seurat_l2_leiden_consensus~timepoint_merged_2, scales = "free") +
@@ -308,14 +320,121 @@ bb_cellmeta(cds_main) |>
     geom = summarybox_geom, 
     show.legend = FALSE
   ) +
-  stat_compare_means(method = "t.test",
+  stat_compare_means(method = "wilcox",
                      label = "p.format",
-                     label.x.npc = 0.5, 
+                     label.x.npc = 0.5,
+                     label.y.npc = 0.8,
                      show.legend = FALSE) + 
   panel_border()
 
 
+clinical_flow_data |> 
+  ggplot(aes(x = patient_type, y = abs_mm3, color = patient_type, fill = patient_type)) +
+  geom_jitter() + 
+  # facet_wrap(~timepoint_merged_2) + 
+  facet_grid(population~timepoint_merged_2, scales = "free") +
+  stat_summary(
+    fun.data = data_summary_mean_se,
+    color = summarybox_color,
+    size = summarybox_size,
+    width = summarybox_width,
+    alpha = summarybox_alpha,
+    geom = summarybox_geom, 
+    show.legend = FALSE
+  ) +
+  stat_compare_means(method = "wilcox",
+                     label = "p.format",
+                     label.x.npc = 0.5,
+                     label.y.npc = 0.8,
+                     show.legend = FALSE) + 
+  panel_border()
+
+
+mcpas_tcr
+
+# monocytes ---------------------------------
+cds_cd14 <- filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(seurat_l2_leiden_consensus == "CD14 Mono"))
+
+bb_var_umap(cds_cd14,"da_score")
+bb_var_umap(cds_cd14,"louvain")
+louvain_da_response <- bb_cellmeta(cds_cd14) |>
+  group_by(louvain) |> summarise(mean_da_score = mean(da_score)) |> 
+  mutate(louvain_da_response = case_when(mean_da_score > 0.2 ~ "sensitive",
+                                         mean_da_score < -0.2 ~ "resistant",
+                                         TRUE ~ "unenriched")) |> 
+  select(louvain, louvain_da_response) |> 
+  deframe()
+
+colData(cds_cd14)$louvain_da_response <- recode(colData(cds_cd14)$louvain, !!!louvain_da_response)
+
+bb_var_umap(cds_cd14, "louvain_da_response")
+
+
+bb_cellmeta(cds_main) |> count(partition_assignment)
+bb_cellmeta(cds_main) |> glimpse()
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "density", facet_by = c("patient_type2", "timepoint_merged_2"))
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "density", facet_by = c("specimen"))
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "louvain", overwrite_labels = TRUE)
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "seurat_l2_leiden_consensus", overwrite_labels = TRUE)
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "seurat_celltype_l2", overwrite_labels = FALSE, facet_by = "value")
+
+bb_var_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "da_score")
+bb_gene_umap(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono")), "TLR4")
 
 
 
-exhaustion_genes <- c("TIGIT", "PDCD1", "LAG3", "CD160", "CD244")
+
+bb_var_umap(cds_main, "da_score")
+bb_var_umap(cds_main, "louvain")
+
+bb_cellmeta(filter_cds(cds_main, cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "Mono"))) |>
+  group_by(louvain) |> summarise(mean_da_score = mean(da_score))
+  
+cds_main_top_markers |> filter(cell_group %in% c("louvain 4",
+                                                 "louvain 12",
+                                                 "louvain 16",
+                                                 "louvain 18",
+                                                 "louvain 57",
+                                                 "louvain 58",
+                                                 "louvain 60",
+                                                 "louvain 61",
+                                                 "louvain 62",
+                                                 "louvain 64")) |> View()
+
+# library(topGO)
+# cd14_sens_genes <- cd14_pseudobulk_res$Result |> filter(padj<0.05, log2FoldChange>0) |> pull(gene_short_name)
+# cd14_resistant_genes <- cd14_pseudobulk_res$Result |> filter(padj<0.05, log2FoldChange<0) |> pull(gene_short_name)
+# 
+# cd14_goeenrich <- map(.x = list(cd14_sens_genes,
+#                                 cd14_resistant_genes),
+#                       .f = \(x, ref = cds_main) {
+#                         bb_goenrichment(query = x, 
+#                                         reference = bb_rowmeta(ref), 
+#                                         go_db = "org.Hs.eg.db")
+#                       }) |> 
+#   set_names(c("sensitive", "resistant"))
+# 
+# cd14_gosummary <- map2(.x = c(0.8, 0.9, 0.8, 0.9),
+#                             .y = list(cd14_goeenrich$sensitive,
+#                                       cd14_goeenrich$sensitive,
+#                                       cd14_goeenrich$resistant,
+#                                       cd14_goeenrich$resistant),
+#                            .f = \(x, dat = cd14_sens_goeenrich) {
+#                              bb_gosummary(x = dat, reduce_threshold = x, go_db = "org.Hs.eg.db")
+#                            }) |> 
+#   set_names(c("sensitive_0.8", "sensitive_0.9", "resistant_0.8", "resistant_0.9"))
+# 
+# bb_goscatter(simMatrix = cd14_gosummary$sensitive_0.8$simMatrix,
+#              reducedTerms = cd14_gosummary$sensitive_0.8$reducedTerms)
+# bb_goscatter(simMatrix = cd14_gosummary$resistant_0.8$simMatrix,
+#              reducedTerms = cd14_gosummary$resistant_0.8$reducedTerms)
+# 
+# bb_goscatter(simMatrix = cd14_gosummary$sensitive_0.9$simMatrix,
+#              reducedTerms = cd14_gosummary$sensitive_0.9$reducedTerms)
+# bb_goscatter(simMatrix = cd14_gosummary$resistant_0.9$simMatrix,
+#              reducedTerms = cd14_gosummary$resistant_0.9$reducedTerms)
+
+cd14_goeenrich$sensitive$res_table |> View()
+
+bb_cellmeta(cds_main) |> glimpse()
+bb_var_umap(cds_monos, "cd16_da_response")

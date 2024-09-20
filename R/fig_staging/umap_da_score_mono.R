@@ -1,8 +1,8 @@
-umap_da_score_tnk <-
+umap_da_score_mono <-
   bb_var_umap(
     filter_cds(
       cds_main,
-      cells = bb_cellmeta(cds_main) |> filter(partition_assignment %in% c("T", "NK"))
+      cells = bb_cellmeta(cds_main) |> filter(seurat_l2_leiden_consensus %in% c("CD14 Mono", "CD16 Mono"))
     ),
     "da_score",
     rasterize = TRUE,
@@ -21,4 +21,3 @@ umap_da_score_tnk <-
   ) +
   labs(fill = "Differential\nAbundance  ") + 
   theme(legend.justification = "center") 
-umap_da_score_tnk

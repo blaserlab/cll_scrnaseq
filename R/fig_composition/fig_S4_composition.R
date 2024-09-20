@@ -9,6 +9,8 @@ if (source_all_figs) {
   source("R/fig_staging/tnk_leiden_umap.R")
   source("R/fig_staging/tnk_cluster_assignment.R")
   source("R/fig_staging/umap_subcluster_tnk.R")
+  source("R/fig_staging/tcr_diversity_plot.R")
+  
   
 }
 
@@ -33,7 +35,7 @@ fig_S4_mid <- plot_grid(
 
 fig_S4_bot <- plot_grid(
   umap_subcluster_tnk + theme(aspect.ratio = 0.85),
-  NULL,
+  tcr_diversity_plot,
   labels = c("D", ""),
   ncol =  2,
   rel_widths = c(1,1)
