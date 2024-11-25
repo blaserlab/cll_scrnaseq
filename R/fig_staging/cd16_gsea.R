@@ -1,4 +1,6 @@
-cd16_pseudobulk_gsea_res_full |> View()
+cd16_pseudobulk_gsea_res_full |> filter(NES > 0) |> View()
+cd16_pseudobulk_gsea_res_full |> filter(pathway == "GOMF_ANTIGEN_BINDING") |> pull(leadingEdge)
+
 
 cd16_pseudobulk_gsea_res_full |> filter(pathway == "AIZARANI_LIVER_C3_NK_NKT_CELLS_2") |> unnest(cols = leadingEdge) |> View()
 
@@ -13,9 +15,9 @@ cd16_gsea_plot <- pmap(.l = list(gene_set = c("",
             plot_title, 
             pval_posx, 
             pval_posy,
-            dat = cd14_enrichment_stats,
-            sets = cd14_genesets,
-            padjdat = cd14_pseudobulk_gsea_res_full) {
+            dat = cd16_enrichment_stats,
+            sets = cd16_genesets,
+            padjdat = cd16_pseudobulk_gsea_res_full) {
        pval <- padjdat |> 
          dplyr::filter(pathway == gene_set) |> 
          pull(padj) |> 
@@ -29,7 +31,9 @@ cd16_gsea_plot <- pmap(.l = list(gene_set = c("",
      }) |> set_names(c("GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP",
                        "MOSERLE_IFNA_RESPONSE"))
 
-cd16_gsea_plots_combined <- cd16_gsea_plot[[""]] / 
-  cd16_gsea_plot[[""]] +
-  patchwork::plot_layout(axes = "collect")
+cd16_gsea_plot
 
+cd16_gsea_plots_combined <- cd16_gsea_plot$GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP / 
+  cd16_gsea_plot$MOSERLE_IFNA_RESPONSE +
+  patchwork::plot_layout(axes = "collect")
+cd16_gsea_plots_combined

@@ -1,6 +1,49 @@
-bb_cellmeta(cds_main) |> glimpse()
+plotfun <-
+  function(data, title) {
+    ggplot(data, aes(
+      x = V1,
+      y = V2,
+      size = size,
+      fill = parentTerm
+    )) +
+      geom_point(pch = 21,
+                 color = "black", 
+                 aes(alpha = score)) +
+      scale_fill_brewer(palette = "Set1") +
+      guides(alpha = guide_legend(order = 2, override.aes=list(shape = 19))) +
+      guides(fill = guide_legend(order = 1, override.aes=list(size = 3)))+
+      guides(size = guide_legend(order = 3)) +
+      labs(x = "PCoA 1", 
+           y = "PCoA 2", 
+           fill = "Parent GO-Term",
+           size = "Term Size",
+           alpha = "-log10 P", 
+           title = title) +
+      theme(legend.box = "horizontal") +
+      theme(aspect.ratio = 0.9) +
+      theme(plot.title = element_text(hjust = 0.5))
+      
+  }
 
-bb_var_umap(cds_main, "dominant_related", facet_by = "sample")
+# stressed
+cd14_sensitive_goscatter <- bb_goscatter(simMatrix = monocyte_goterm_enrichment$cd14_ibr_sensitive$gosummary_0.8$simMatrix, 
+             reducedTerms = monocyte_goterm_enrichment$cd14_ibr_sensitive$gosummary_0.8$reducedTerms)[["data"]] |> 
+  as_tibble() |> 
+  # mutate(parentTerm = recode(parentTerm, "biological process involved in interspecies interaction between organisms" = "interspecies interaction")) |> 
+  filter(size >5) |> 
+  plotfun(title = "cd14_sensitive") 
+
+cd14_sensitive_goscatter
+
+cd14_resistant_goscatter <- bb_goscatter(simMatrix = monocyte_goterm_enrichment$cd14_ibr_resistant$gosummary_0.8$simMatrix, 
+             reducedTerms = monocyte_goterm_enrichment$cd14_ibr_resistant$gosummary_0.8$reducedTerms)[["data"]] |> 
+  as_tibble() |> 
+  # mutate(parentTerm = recode(parentTerm, "biological process involved in interspecies interaction between organisms" = "interspecies interaction")) |> 
+  filter(size >5) |> 
+  plotfun(title = "cd14_resistant") 
+
+cd14_resistant_goscatter
+
 
 blaseRdata::msigdb_genesets
 mrd1_gsea_res <- fgsea::fgsea(pathways = bb_extract_msig(filter_list = list(ORGANISM = "Homo sapiens"), return_form = "name_list"), 
