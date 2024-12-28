@@ -1,0 +1,88 @@
+cds_main <- bb_cellmeta(cds_main) |> 
+  select(cell_id, cd16_da_response, cd14_louvain_da_response) |> 
+  mutate(cd14_louvain_da_response = as.character(cd14_louvain_da_response)) |> 
+  mutate(cd14_louvain_da_response = ifelse(str_detect(cd14_louvain_da_response, "sensitive|resistant|unenriched"), cd14_louvain_da_response, "")) |>
+  mutate(cd16_da_response = ifelse(is.na(cd16_da_response), "", cd16_da_response)) |> 
+  mutate(mono_response_merged = paste0(cd16_da_response, cd14_louvain_da_response)) |> 
+  mutate(mono_response_merged = ifelse(str_detect(mono_response_merged, "^sensitive$|^resistant$|^unenriched$"), mono_response_merged, NA)) |> 
+  select(cell_id, mono_response_merged) |> 
+  bb_tbl_to_coldata(cds_main, min_tbl = _)
+
+#PMID: 21383243
+#PMID: 36653453
+#DOI: 10.1126/sciimmunol.aba7918
+#PMID: 31591533
+#
+
+cd16_le <- cd16_pseudobulk_gsea_res_full |> 
+  filter(
+    pathway %in% c(
+"GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP",
+                       "MOSERLE_IFNA_RESPONSE"
+    )
+  ) |>
+  unnest(cols = c(leadingEdge)) |>
+  pull(leadingEdge)
+
+cd14_le <- cd14_pseudobulk_gsea_res_full |> 
+  filter(
+    pathway %in% c(
+"GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP",
+                       "MOSERLE_IFNA_RESPONSE"
+    )
+  ) |>
+  unnest(cols = c(leadingEdge)) |>
+  pull(leadingEdge)
+
+
+mono_examplegenes <- c(cd14_le, cd16_le)
+
+# mono_examplegenes <-
+#   c("CXCL8", "CCL4", "CXCL1","STAT1", "MX1", "CD274", "IFIT2", "IFIT3")
+# tcell_leiden_enrichment_examplegenes %in% tcell_leiden_encrichment_le$leadingEdge
+
+
+
+mono_genebubdat <-
+  bb_genebubbles(
+    filter_cds(
+      cds_main,
+      cells = bb_cellmeta(cds_main) |>
+        filter(
+          seurat_l2_leiden_consensus %in% c("CD14 Mono", "CD16 Mono"),
+          !is.na(mono_response_merged)
+        )
+    ),
+    genes = mono_examplegenes[mono_examplegenes %in% c("IFI44", "IFI44L", "IFI16", "STAT1", "MX1", "G0S2", "PLK3", "MAFF", "IER3", "CXCL8", "SAMD9", "ICAM1", "REL", "IFIT2", "IFIT3")],
+    # genes = mono_examplegenes ,
+    cell_grouping = c("seurat_l2_leiden_consensus", "mono_response_merged"),
+    return_value = "data",
+    scale_expr = TRUE
+  )
+
+mono_genebub <-
+  ggplot(
+    mono_genebubdat,
+    aes(
+      x = gene_short_name,
+      y = mono_response_merged,
+      fill = expression,
+      size = proportion
+    )
+  ) +
+  geom_point(pch = 21) +
+  scale_fill_viridis_c() +
+  scale_size_area() +
+  theme_minimal_grid(font_size = 10) + 
+  theme(axis.text.x = element_text(
+    face = "italic",
+    angle = 30,
+    hjust = 1
+  )) +
+  labs(x = NULL,
+       y = NULL,
+       fill = "Expression",
+       size = "Proportion") +
+  theme(axis.text.y = element_text(angle = 90, hjust = 0.5)) + 
+  facet_wrap(~seurat_l2_leiden_consensus, ncol = 1)
+mono_genebub
