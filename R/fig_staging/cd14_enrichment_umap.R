@@ -1,6 +1,5 @@
 
 
-colData(cds_main)$cd14_louvain_da_response <- as.character(colData(cds_main)$cd14_louvain_da_response)
 cd14_enrichment_umap <-
   bb_var_umap(
     filter_cds(

@@ -33,7 +33,7 @@ fig_4_mid <- plot_grid(
 )
 
 fig_4_bot <- plot_grid(
-  NULL,
+  cd16_gsea_plots_combined,
   NULL,
   align = "h",
   axis = "b",

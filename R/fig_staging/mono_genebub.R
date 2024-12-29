@@ -1,18 +1,3 @@
-cds_main <- bb_cellmeta(cds_main) |> 
-  select(cell_id, cd16_da_response, cd14_louvain_da_response) |> 
-  mutate(cd14_louvain_da_response = as.character(cd14_louvain_da_response)) |> 
-  mutate(cd14_louvain_da_response = ifelse(str_detect(cd14_louvain_da_response, "sensitive|resistant|unenriched"), cd14_louvain_da_response, "")) |>
-  mutate(cd16_da_response = ifelse(is.na(cd16_da_response), "", cd16_da_response)) |> 
-  mutate(mono_response_merged = paste0(cd16_da_response, cd14_louvain_da_response)) |> 
-  mutate(mono_response_merged = ifelse(str_detect(mono_response_merged, "^sensitive$|^resistant$|^unenriched$"), mono_response_merged, NA)) |> 
-  select(cell_id, mono_response_merged) |> 
-  bb_tbl_to_coldata(cds_main, min_tbl = _)
-
-#PMID: 21383243
-#PMID: 36653453
-#DOI: 10.1126/sciimmunol.aba7918
-#PMID: 31591533
-#
 
 cd16_le <- cd16_pseudobulk_gsea_res_full |> 
   filter(

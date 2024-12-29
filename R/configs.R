@@ -6,6 +6,7 @@ conflict_prefer("lag", "dplyr")
 conflict_prefer("select", "dplyr")
 conflict_prefer("rename", "dplyr")
 conflict_prefer("count", "dplyr")
+conflict_prefer("as.data.frame", "base")
 
 
 # analysis configurations -------------------------------------------------
@@ -79,9 +80,4 @@ timepoint_palette <- c("1" = brewer.pal(3, "YlGn")[1],
 network_out <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/r_out/")
 network_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
 paper_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
-
-# source local configs ----------------------------------------------------
-# these are sourced after main configs and will overwrite duplicate entries if
-# present. The file local_configs.R is ignored by git and so is useful for user-
-# specific configurations such as output directories or formatting.
 

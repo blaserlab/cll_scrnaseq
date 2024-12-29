@@ -33,10 +33,9 @@ fig_S5_mid <- plot_grid(
 )
 
 fig_S5_bot <- plot_grid(
-  NULL,
-  # umap_subcluster_mono + theme(aspect.ratio = 0.85),
-  NULL,
-  labels = c("D", ""),
+  cd14_enrichment_umap + theme(aspect.ratio = 0.9),
+  cd16_enrichment_umap + theme(aspect.ratio = 0.9),
+  labels = c("D", "E"),
   ncol =  2,
   rel_widths = c(1,1)
 )
