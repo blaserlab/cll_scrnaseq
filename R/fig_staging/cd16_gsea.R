@@ -1,10 +1,3 @@
-cd16_pseudobulk_gsea_res_full |> filter(NES > 0) |> View()
-cd16_pseudobulk_gsea_res_full |> filter(pathway == "GOMF_ANTIGEN_BINDING") |> pull(leadingEdge)
-
-
-cd16_pseudobulk_gsea_res_full |> filter(pathway == "AIZARANI_LIVER_C3_NK_NKT_CELLS_2") |> unnest(cols = leadingEdge) |> View()
-
-
 cd16_gsea_plot <- pmap(.l = list(gene_set = c("GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP",
                             "MOSERLE_IFNA_RESPONSE"),
                plot_title = c("LPS Treated Monocytes Up",

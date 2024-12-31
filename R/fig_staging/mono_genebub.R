@@ -68,6 +68,6 @@ mono_genebub <-
        y = NULL,
        fill = "Expression",
        size = "Proportion") +
-  theme(axis.text.y = element_text(angle = 90, hjust = 0.5)) + 
+  theme(axis.text.y = element_text(angle = 30, hjust = 1)) + 
   facet_wrap(~seurat_l2_leiden_consensus, ncol = 1)
 mono_genebub

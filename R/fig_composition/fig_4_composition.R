@@ -9,6 +9,8 @@ if (source_all_figs) {
   source("R/fig_staging/umap_da_score_mono.R")
   source("R/fig_staging/cluster_proportion_ratio_plot_mono.R")
   source("R/fig_staging/cd14_gsea.R")
+  source("R/fig_staging/cd16_gsea.R")
+  source("R/fig_staging/mono_genebub.R")
   
 }
 
@@ -34,12 +36,12 @@ fig_4_mid <- plot_grid(
 
 fig_4_bot <- plot_grid(
   cd16_gsea_plots_combined,
-  NULL,
+  mono_genebub,
   align = "h",
   axis = "b",
   labels = c("E", "F"),
   ncol =  2,
-  rel_widths = c(1, 1)
+  rel_widths = c(1, 1.5)
 )
 
 fig_4 <- plot_grid(
