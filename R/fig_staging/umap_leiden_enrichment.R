@@ -4,7 +4,7 @@ umap_leiden_enrichment <-
       cds_main,
       cells = bb_cellmeta(cds_main) |> filter(partition_assignment == "B")
     ),
-    "leiden_enrichment",
+    "leiden_enrichment1",
     foreground_alpha = 0.05,
     rasterize = TRUE, 
     legend_pos = "top",

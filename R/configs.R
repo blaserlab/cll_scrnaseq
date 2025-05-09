@@ -22,6 +22,8 @@ experimental_group_palette <- c(
   "BTK" = "#DC0000",
   "responsive" = "#3C5488",
   "sensitive" = "#3C5488",
+  "IBS" = "#3C5488",
+  "IBR" = "#DC0000",
   "resistant" = "#DC0000",
   "unenriched" = "green4",
   "1" = "white",
@@ -41,7 +43,9 @@ experimental_group_palette <- c(
   "Inflammatory 1" = brewer.pal(n = 8, name = "Set2")[1],
   "Inflammatory 2" = brewer.pal(n = 8, name = "Set2")[2],
   "Stressed" = brewer.pal(n = 8, name = "Set2")[3],
-  "Ig-producing" = brewer.pal(n = 8, name = "Set2")[4]
+  "Activated BCR" = brewer.pal(n = 8, name = "Set2")[4],
+  "Malignant Clone" = brewer.pal(n = 8, name = "Set2")[7],
+  "non-Malignant Clone" = brewer.pal(n = 8, name = "Set2")[8]
   
 )
 
@@ -84,3 +88,6 @@ network_out <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnase
 network_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/tables")
 paper_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/Paper/tables")
 
+colData(cds_main)$leiden_comparison_renamed <- recode(colData(cds_main)$leiden_comparison_renamed, "Acivated BCR" = "Activated BCR")
+colData(cds_main)$patient_type3 <- case_match(colData(cds_main)$patient_type2, "sensitive" ~ "IBS", "resistant" ~ "IBR")
+colData(cds_main)$leiden_enrichment1 <- case_match(colData(cds_main)$leiden_enrichment, "sensitive" ~ "IBS", "resistant" ~ "IBR", .default = colData(cds_main)$leiden_enrichment)

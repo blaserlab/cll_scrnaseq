@@ -18,6 +18,8 @@ suppressPackageStartupMessages(library("ggrastr"))
 suppressPackageStartupMessages(library("tidymodels"))
 suppressPackageStartupMessages(library("nlme"))
 suppressPackageStartupMessages(library("multilevelmod"))
+suppressPackageStartupMessages(library("patchwork"))
+
 
 
 # uncomment and use the following to install or update the data package---------------------------------------

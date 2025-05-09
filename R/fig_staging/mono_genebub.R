@@ -26,7 +26,16 @@ mono_examplegenes <- c(cd14_le, cd16_le)
 #   c("CXCL8", "CCL4", "CXCL1","STAT1", "MX1", "CD274", "IFIT2", "IFIT3")
 # tcell_leiden_enrichment_examplegenes %in% tcell_leiden_encrichment_le$leadingEdge
 
+# bb_cellmeta(cds_main) |> count(mono_response_merged)
 
+
+colData(cds_main)$mono_response_merged <-
+  case_match(
+    colData(cds_main)$mono_response_merged,
+    "resistant" ~ "IBR",
+    "sensitive" ~ "IBS",
+    .default = colData(cds_main)$mono_response_merged
+  )
 
 mono_genebubdat <-
   bb_genebubbles(

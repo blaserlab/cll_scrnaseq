@@ -9,8 +9,8 @@ cell_representation_data <- map_dfr(.x = c("Timepoint 1", "Timepoint 2", "Timepo
         ),
         sample_var = "specimen",
         cluster_var = "partition_assignment",
-        comparison_var = "patient_type2",
-        comparison_levels = c("resistant", "sensitive"),
+        comparison_var = "patient_type3",
+        comparison_levels = c("IBR", "IBS"),
         return_val = "data"
       ) |> 
         mutate(timepoint = x)

@@ -4,7 +4,7 @@ abs_treg <- bb_cellmeta(cds_main) |>
   count(patient,
         sample,
         seurat_l2_leiden_consensus,
-        patient_type2,
+        patient_type3,
         timepoint_merged_1,
         timepoint_merged_2) |>
   pivot_wider(names_from = seurat_l2_leiden_consensus,
@@ -16,7 +16,7 @@ abs_treg <- bb_cellmeta(cds_main) |>
               filter(population == "CD3"),
             by = join_by(patient, timepoint_merged_2)) |> 
   mutate(abs_treg = abs_mm3 * fraction_treg) |> 
-  ggplot(aes(x = patient_type, y = abs_treg, fill = patient_type, color = patient_type)) +
+  ggplot(aes(x = patient_type3, y = abs_treg, fill = patient_type3, color = patient_type3)) +
   geom_jitter(width = jitter_width,
               size = jitter_size,
               shape = jitter_shape) +

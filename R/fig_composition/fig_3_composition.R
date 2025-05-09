@@ -1,8 +1,8 @@
 # source("R/dependencies.R")
 # source("R/configs.R")
 
-source_all_figs <- TRUE
-# source_all_figs <- FALSE
+# source_all_figs <- TRUE
+source_all_figs <- FALSE
 
 if (source_all_figs) {
   source("R/fig_staging/tnkcell_subpop_umap.R")

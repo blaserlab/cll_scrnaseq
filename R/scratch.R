@@ -87,4 +87,8 @@ bb_cellmeta(cds_main) |>
 
 bb_gene_umap(cds_main, "CD19")
 
+ls(envir = as.environment("deconflicted.data"))[ls(envir = as.environment("deconflicted.data")) |> grepl("pseudobulk", x = _)]
+
+pseudobulk_MRD1_BTK[2][[1]] |> filter(gene_short_name == "GRB2")
+
 

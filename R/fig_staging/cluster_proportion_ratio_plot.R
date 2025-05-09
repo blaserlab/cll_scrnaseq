@@ -1,11 +1,11 @@
 
 cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
   filter(partition_assignment  == "B") |> 
-  count(patient, sample, leiden_comparison_renamed, patient_type2, timepoint_merged_1) |> 
+  count(patient, sample, leiden_comparison_renamed, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = leiden_comparison_renamed, values_from = n, values_fill = 1) %>%
-  mutate(ratio = (`Ig-producing`/(`Inflammatory 1` + `Inflammatory 2` + Stressed))) %>%
+  mutate(ratio = (`Activated BCR`/(`Inflammatory 1` + `Inflammatory 2` + Stressed))) %>%
   mutate(log2_ratio = log2(ratio)) %>%
-  ggplot(mapping = aes(x = patient_type2, y = log2_ratio, color = patient_type2, fill = patient_type2)) +
+  ggplot(mapping = aes(x = patient_type3, y = log2_ratio, color = patient_type3, fill = patient_type3)) +
   geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
   facet_wrap(facets = vars(timepoint_merged_1)) +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
@@ -28,7 +28,7 @@ cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
                      label.y = 16, 
                      show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
-  labs(y = "log<sub>2</sub>(Ig-producing:other)", 
+  labs(y = "log<sub>2</sub>(Activated BCR:other)", 
        color = NULL, 
        fill = NULL, 
        x = NULL) +
@@ -38,3 +38,5 @@ cluster_proportion_ratio_plot <- bb_cellmeta(cds_main) %>%
   theme(legend.position = "top", 
         legend.justification = "center") +
   guides(fill = guide_legend(ncol = 1, override.aes = list(size = 2)))
+
+cluster_proportion_ratio_plot

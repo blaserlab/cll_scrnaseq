@@ -32,7 +32,7 @@ tcell_leiden_enrichment_genebubdat <-
         )
     ),
     genes = tcell_leiden_enrichment_examplegenes,
-    cell_grouping = "leiden_enrichment",
+    cell_grouping = "leiden_enrichment1",
     return_value = "data",
     scale_expr = TRUE
   )
@@ -41,7 +41,7 @@ tcell_leiden_enrichment_genebub <-
   ggplot(
     tcell_leiden_enrichment_genebubdat,
     aes(
-      x = leiden_enrichment,
+      x = leiden_enrichment1,
       y = gene_short_name,
       fill = expression,
       size = proportion

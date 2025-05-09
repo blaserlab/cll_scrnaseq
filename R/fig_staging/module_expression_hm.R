@@ -35,7 +35,7 @@ module_heatmap_bcells <-
   grid.grabExpr(draw(
     Heatmap(matrix = agg_mat_bcells_type_timepoint[, col.order],
             name = "Module\nExpression",
-            column_split = c(rep("resistant", times = 3), rep("sensitive", times = 3)),
+            column_split = c(rep("IBR", times = 3), rep("IBS", times = 3)),
             col = col_fun_heatmap_bcells,
             row_names_gp = gpar(fontsize = 9),
             column_dend_height = unit(3,"mm"),

@@ -18,7 +18,7 @@ tcell_gsea_plot <- pmap(.l = list(gene_set = c("GSE26495_PD1HIGH_VS_PD1LOW_CD8_T
        fgsea::plotEnrichment(stats = dat,
                              pathway = sets[[gene_set]]) + 
          labs(subtitle = plot_title,
-              x = "Ibrutinib Sensitive | Ibrutinib Resistant") +
+              x = "IBS | IBR") +
          theme(plot.subtitle = element_text(hjust = 0.5)) + 
          annotate(geom = "text", label = paste0("padj =\n", pval), x = pval_posx, y = pval_posy)
      }) |> set_names(c("GSE26495_PD1HIGH_VS_PD1LOW_CD8_TCELL_DN",

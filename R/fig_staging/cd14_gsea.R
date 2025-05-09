@@ -18,7 +18,7 @@ cd14_gsea_plot <- pmap(.l = list(gene_set = c("GSE9988_LOW_LPS_VS_VEHICLE_TREATE
        fgsea::plotEnrichment(stats = dat,
                              pathway = sets[[gene_set]]) + 
          labs(subtitle = plot_title,
-              x = "Ibrutinib Sensitive | Ibrutinib Resistant") +
+              x = "IBS | IBR") +
          theme(plot.subtitle = element_text(hjust = 0.5)) + 
          annotate(geom = "text", label = paste0("padj =\n", pval), x = pval_posx, y = pval_posy)
      }) |> set_names(c("GSE9988_LOW_LPS_VS_VEHICLE_TREATED_MONOCYTE_UP",
