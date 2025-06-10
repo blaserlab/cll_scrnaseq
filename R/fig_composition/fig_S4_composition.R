@@ -36,7 +36,7 @@ fig_S4_mid <- plot_grid(
 fig_S4_bot <- plot_grid(
   umap_subcluster_tnk + theme(aspect.ratio = 0.85),
   tcr_diversity_plot,
-  labels = c("D", ""),
+  labels = c("D", "E"),
   ncol =  2,
   rel_widths = c(1,1)
 )

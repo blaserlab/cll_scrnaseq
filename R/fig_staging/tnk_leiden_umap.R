@@ -1,4 +1,4 @@
-tnk_louvain_umap <-
+tnk_leiden_umap <-
   bb_var_umap(
     cds_main[, colData(cds_main)$partition_assignment %in% c("T", "NK")],
     "leiden",
