@@ -2,7 +2,7 @@ pt_char <- bb_cellmeta(cds_main) |>
   group_by(
     specimen,
     patient,
-    patient_type2,
+    patient_type3,
     timepoint_merged_1,
     gender,
     age_at_ibr_start,
@@ -101,7 +101,7 @@ pt_char_anno <-
       gender = c("F" = "pink", "M" = "blue"),
       del13p = c(`FALSE` = "white", `TRUE` = "black"),
       tri12 = c(`FALSE` = "white", `TRUE` = "black"),
-      patient_type2 = experimental_group_palette,
+      patient_type3 = experimental_group_palette,
       patient = pt_colors,
       age_at_ibr_start = col_fun_pt_age,
       btk_clone_vaf_pct = col_fun_btk_clone_vaf,

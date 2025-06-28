@@ -1,7 +1,7 @@
 cellchat_val_dat <- cellchat_dat |> 
   pivot_longer(cols = where(is.numeric), names_to = "specimen", values_to = "prob") |> 
   left_join(bb_cellmeta(cds_main) |> 
-              group_by(specimen, timepoint_merged_2, patient_type2) |> 
+              group_by(specimen, timepoint_merged_1, patient_type3) |> 
               summarise())
 
 pathways <- c("MIF", "MIF")
@@ -19,13 +19,13 @@ cellchat_validation_plots <- pmap(.l = list(
            source == src,
            target == tgt)  |>
     ggplot(aes(
-      x = patient_type2,
+      x = patient_type3,
       y = prob,
-      color = patient_type2,
-      fill = patient_type2
+      color = patient_type3,
+      fill = patient_type3
     )) +
     geom_jitter(pch = 21) +
-    facet_wrap( ~ timepoint_merged_2) +
+    facet_wrap( ~ timepoint_merged_1) +
     scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
     scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
     theme(strip.background = element_blank()) +
@@ -64,5 +64,4 @@ cellchat_validation_plots <- pmap(.l = list(
     guides(fill = guide_legend(ncol = 2, override.aes = list(size = 2)))
   
 }) |> set_names(paste(pathways, sources, targets, sep = " | "))
-cellchat_validation_plots[[1]]
-cellchat_validation_plots[[2]]
+

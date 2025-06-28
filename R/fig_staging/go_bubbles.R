@@ -55,5 +55,5 @@ bcr_goscatter <- bb_goscatter(simMatrix = leiden_other_summary_0.9$simMatrix,
   as_tibble() |> 
   mutate(parentTerm = recode(parentTerm, "immunoglobulin mediated immune response" = "Ig mediated immune response")) |> 
   filter(size > 10) |> 
-  plotfun(title = "Ig-Producing")
+  plotfun(title = "Activated BCR")
 cds_main_leiden_comparison_tm |> filter(cell_group == "other") |> pull(gene_short_name)

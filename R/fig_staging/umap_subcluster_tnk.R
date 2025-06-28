@@ -1,7 +1,7 @@
 umap_subcluster_tnk <- 
   bb_var_umap(
     obj = cds_main[,colData(cds_main)$partition_assignment %in% c("T", "NK")],
-    var = "leiden_enrichment",
+    var = "leiden_enrichment1",
     foreground_alpha = 0.1,
     palette = experimental_group_palette,
     rasterize = TRUE,

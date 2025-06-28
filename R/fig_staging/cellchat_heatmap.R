@@ -49,7 +49,7 @@ cellchat_row_anno <-
 
 # column annotation----------------------
 patient_data <- bb_cellmeta(cds_main) |>
-  group_by(specimen, timepoint_merged_2, patient_type2) |>
+  group_by(specimen, timepoint_merged_1, patient_type3) |>
   summarise()
 
 colanno_df <- left_join(tibble(specimen = colnames(cellchat_mat_filtered)),
@@ -63,10 +63,10 @@ stopifnot(all(rownames(colanno_df) == colnames(cellchat_mat_filtered)))
 
 cellchat_col_anno <- ComplexHeatmap::HeatmapAnnotation(which = "column", 
                                                        df = colanno_df,
-                                                       col = list(patient_type2 = experimental_group_palette,
-                                                                  timepoint_merged_2 = experimental_group_palette),
-                                                       annotation_label = list(patient_type2 = "Patient Type",
-                                                                               timepoint_merged_2 = "Timepoint"))
+                                                       col = list(patient_type3 = experimental_group_palette,
+                                                                  timepoint_merged_1 = experimental_group_palette),
+                                                       annotation_label = list(patient_type3 = "Patient Type",
+                                                                               timepoint_merged_1 = "Timepoint"))
 
 cellchat_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(cellchat_mat_filtered, 
                         col = cellchat_mat_col_fun, 
