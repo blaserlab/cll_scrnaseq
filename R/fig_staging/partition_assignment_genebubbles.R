@@ -32,6 +32,7 @@ partition_assignment_genebubbles <-
   geom_point(pch = 21, color = "black") +
   scale_fill_viridis_c() +
   scale_size_area() +
+  theme_minimal_grid(font_size = 10) + 
   theme(axis.text.y = element_text(face = "italic")) +
   labs(x = NULL, y = NULL, fill = "Expression", size = "Proportion\nExpressing")
 

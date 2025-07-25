@@ -1,8 +1,8 @@
-# source("R/dependencies.R")
-# source("R/configs.R")
+source("R/dependencies.R")
+source("R/configs.R")
 
-# source_all_figs <- TRUE
-source_all_figs <- FALSE
+source_all_figs <- TRUE
+# source_all_figs <- FALSE
 
 if (source_all_figs) {
   source("R/fig_staging/umap_partition_assignment.R")
@@ -14,7 +14,6 @@ if (source_all_figs) {
   source("R/fig_staging/umap_numbered_leiden.R")
   source("R/fig_staging/cluster_proportion_ratio_plot.R")
   source("R/fig_staging/umap_subcluster.R")
-  source("R/fig_staging/bcr.R")
   
 }
 
@@ -58,10 +57,10 @@ leiden_enrichment_tm_hm_alt <- plot_grid(leiden_enrichment_tm_hm) + theme(plot.m
 fig_1_bottom <- 
   plot_grid(
     leiden_enrichment_tm_hm_alt,
-    bcr_plot,
+    NULL,
     ncol = 2,
     rel_widths = c(2,1),
-    labels = c("I", "J")
+    labels = c("I")
   )
 
 fig_1 <- 
