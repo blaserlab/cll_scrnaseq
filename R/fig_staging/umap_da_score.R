@@ -7,7 +7,7 @@ umap_da_score <-
     "da_score",
     rasterize = TRUE,
     legend_pos = "top",
-    hexify = TRUE
+    hexify = FALSE
   ) +
   scale_fill_gradient2(low = "#DC0000",
                        high = "#3C5488",

@@ -1,5 +1,5 @@
-source("R/dependencies.R")
-source("R/configs.R")
+# source("R/dependencies.R")
+# source("R/configs.R")
 
 source_all_figs <- TRUE
 # source_all_figs <- FALSE

@@ -2,11 +2,11 @@
 
 cluster_proportion_plot_tnk2 <- bb_cellmeta(cds_main) %>%
   filter(partition_assignment  %in% c("T", "NK")) |> 
-  count(patient, sample, leiden_enrichment, patient_type2, timepoint_merged_1) |> 
+  count(patient, sample, leiden_enrichment, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = leiden_enrichment, values_from = n, values_fill = 0) %>%
   mutate(pct = sensitive/(resistant + sensitive + unenriched)*100) |> 
-  ggplot(mapping = aes(x = patient_type2, y = pct, color = patient_type2, fill = patient_type2)) +
-  geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke) +
+  ggplot(mapping = aes(x = patient_type3, y = pct, color = patient_type3, fill = patient_type3)) +
+  geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke, width = jitter_width) +
   facet_wrap(facets = vars(timepoint_merged_1)) +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
   scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
@@ -25,7 +25,7 @@ cluster_proportion_plot_tnk2 <- bb_cellmeta(cds_main) %>%
   stat_compare_means(method = "t.test", 
                      label = "p.signif", 
                      label.x.npc = "center",
-                     label.y.npc = 0.9, 
+                     label.y = 60, 
                      show.legend = FALSE) +
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
   labs(y = "Percent IBS-enriched", 
@@ -37,5 +37,5 @@ cluster_proportion_plot_tnk2 <- bb_cellmeta(cds_main) %>%
   theme(axis.ticks.x.bottom = element_blank()) +
   theme(legend.position = "top", 
         legend.justification = "center") +
-  guides(fill = guide_legend(ncol = 1, override.aes = list(size = 2)))
+  guides(fill = guide_legend(ncol = 2, override.aes = list(size = 2)))
 cluster_proportion_plot_tnk2

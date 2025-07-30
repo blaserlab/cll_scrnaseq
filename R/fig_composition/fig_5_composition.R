@@ -5,8 +5,7 @@ source_all_figs <- TRUE
 # source_all_figs <- FALSE
 
 if (source_all_figs) {
-  source("R/fig_staging/cellchat_heatmap.R")
-  source("R/fig_staging/heatmap_validation.R")
+  source("R/fig_staging/cellchat_figs.R")
 }
 
 fig_5_top <- plot_grid(
@@ -15,8 +14,8 @@ fig_5_top <- plot_grid(
 )
 
 fig_5_bot <- plot_grid(
-  cellchat_validation_plots$`MIF | CD8 TEM | CD8 TEM`,
-  cellchat_validation_plots$`MIF | B memory | CD14 Mono`,
+  cellchat_validation_plots[[1]],
+  cellchat_validation_plots[[2]],
   ncol = 2,
   rel_widths = c(1,1),
   labels = c("B", "C")
@@ -35,3 +34,5 @@ save_plot(
   base_width = 7.5,
   base_height = 9.75
 )
+
+

@@ -1,8 +1,7 @@
 # comparing the ratio of cells in the leiden enrichment clusters in sensitive and resistant patients by timepoint
-bb_cellmeta(cds_main) |> glimpse()
 cluster_proportion_cd14_data <- bb_cellmeta(cds_main) %>%
   filter(seurat_l2_leiden_consensus == "CD14 Mono") |> 
-  count(patient, sample, cd14_louvain_da_response, patient_type2, timepoint_merged_1) |> 
+  count(patient, sample, cd14_louvain_da_response, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = cd14_louvain_da_response, values_from = n, values_fill = 0) %>%
   mutate(pct = sensitive/(unenriched + resistant + sensitive)*100) |> 
   mutate(cluster = "CD14 Mono")
@@ -11,7 +10,7 @@ cluster_proportion_cd14_data <- bb_cellmeta(cds_main) %>%
 
 cluster_proportion_cd16_data <- bb_cellmeta(cds_main) %>%
   filter(seurat_l2_leiden_consensus == "CD16 Mono") |> 
-  count(patient, sample, cd16_da_response, patient_type2, timepoint_merged_1) |> 
+  count(patient, sample, cd16_da_response, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = cd16_da_response, values_from = n, values_fill = 0) %>%
   mutate(pct = sensitive/(unenriched + resistant + sensitive)*100) |> 
   mutate(cluster = "CD16 Mono")
@@ -21,13 +20,14 @@ cluster_proportion_mono_data <- bind_rows(cluster_proportion_cd14_data, cluster_
 cluster_proportion_plot_mono <-
   ggplot(cluster_proportion_mono_data, 
          mapping = aes(
-    x = patient_type2,
+    x = patient_type3,
     y = pct,
-    color = patient_type2,
-    fill = patient_type2
+    color = patient_type3,
+    fill = patient_type3
   )) +
   geom_jitter(shape = jitter_shape,
               size = jitter_size,
+              width = jitter_width,
               stroke = jitter_stroke) +
   facet_grid(cluster ~ timepoint_merged_1, scales = "free", axes = "all_x") +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +

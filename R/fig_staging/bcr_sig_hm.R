@@ -75,7 +75,6 @@ bcr_genes <- c(
 "VAV1",
 "VAV2",
 "VAV3")
-bb_cellmeta(cds_main) |> glimpse()
 colData(cds_main)$type_timepoint <- paste0(colData(cds_main)$patient_type3, "\n", colData(cds_main)$timepoint_merged_1)
 
 

@@ -6,7 +6,7 @@ umap_density <-
     var = "density",
     sample_equally = TRUE, 
     cell_size = 0.5,
-    facet_by = c("patient_type2", "timepoint_merged_2"),
+    facet_by = c("patient_type3", "timepoint_merged_1"),
     # rows = vars(patient_type2), 
     # cols = vars(timepoint_merged_2),
     foreground_alpha = 0.2, 

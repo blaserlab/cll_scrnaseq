@@ -14,7 +14,7 @@ if (source_all_figs) {
 
 save_plot(
   plot_grid(tsubtype_genebub),
-  filename = fs::path(network_out, "fig_S4.5.pdf"),
+  filename = fs::path(network_out, "fig_S6.pdf"),
   base_width = 7.5,
   base_height = 9.75
 )
