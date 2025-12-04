@@ -127,4 +127,6 @@ pt_characteristics_hm <- grid.grabExpr(draw(ComplexHeatmap::Heatmap(
 ), merge_legend = FALSE, 
 heatmap_legend_side = "bottom"), wrap = TRUE, width = unit(5, "in"), height = unit(5, "in")) 
 
-
+# pt_char_sh <- SummarizedHeatmap(pt_char_mat)
+# colData(pt_char_sh)
+# waldo::compare(rownames(pt_char_anno_df), rownames(colData(pt_char_sh)))

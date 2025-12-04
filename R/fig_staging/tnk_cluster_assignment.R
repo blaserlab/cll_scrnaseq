@@ -10,4 +10,5 @@ tnk_cluster_assignment <- bb_cellmeta(cds_main) |>
   geom_bar(color = "black",
            stat = "identity",
            position = "fill") + 
-  labs(fill = "Reference celltype", x = NULL, y = "Proportion of cluster")
+  labs(fill = "Reference celltype", x = NULL, y = "Proportion of cluster") + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))

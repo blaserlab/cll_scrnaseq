@@ -36,11 +36,38 @@ cd14_pseudobulk_res$Result |>
   arrange(padj) |> 
   write_csv(fs::path(paper_tables, "table_S6.csv"))
 
-# table S7:  cd17 monocyte DGE --------------------
+# table S7:  cd16 monocyte DGE --------------------
   
 cd16_pseudobulk_res$Result |> 
   arrange(padj) |> 
   write_csv(fs::path(paper_tables, "table_S7.csv"))
 
+# table S8:  cd16 monocyte DGE --------------------
+  
+cds_main_top_markers|>
+  filter(cell_group %in% paste0("louvain ", c(12, 16, 57, 58, 18, 60, 61, 62, 64, 4))) |>
+  arrange(cell_group) |> 
+  write_csv(fs::path(paper_tables, "table_S8.csv"))
 
-# 
+
+# table S9:  cellchat results -------------------
+left_join(
+  cellchat_wilcox,
+  cellchat_val_dat |> group_by(rownames, source, target, interaction_name, pathway_name) |> summarise(),
+  by = join_by(rownames)
+) |>
+  select(
+    source,
+    target,
+    interaction_name,
+    pathway_name,
+    timepoint = timepoint_merged_1,
+    .y.,
+    group1,
+    group2,
+    n1,
+    n2,
+    statistic,
+    p
+  ) |> arrange(p) |> write_csv(fs::path(paper_tables, "table_S9.csv"))
+

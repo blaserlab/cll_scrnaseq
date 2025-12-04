@@ -11,10 +11,10 @@ cellchat_mat <- cellchat_dat |>
   mutate(type_timepoint = paste0(patient_type3, "_", timepoint_merged_1)) |> 
   select(-patient_type3, -timepoint_merged_1) |> 
   pivot_wider(names_from = type_timepoint, values_from = median_probability) |> 
-  filter(!str_detect(target, "^B ")) |>
+  filter(!str_detect(target, "^B ")) |> 
   filter(!str_detect(interaction_name, "^HLA")) |>
   filter(rownames %in% significant) |> 
-  filter(str_detect(rownames, "CD99", negate = TRUE)) |> 
+  filter(str_detect(rownames, "CD99", negate = TRUE)) |>
   select(rownames, where(is.numeric)) |> 
   bb_tbl_to_matrix()
 
@@ -38,7 +38,10 @@ cellchat_hm_fun <- function(hm, pal1, pal2) {
     axis.ticks.y = element_blank(),
     axis.text.x = element_blank(),
     axis.ticks.x = element_blank()
-  ) + theme(plot.margin = unit(c(0, 0, 10, 0), "mm"))
+  ) + 
+    # coord_cartesian(clip = "off")
+    theme(plot.margin = unit(c(0, 0, 10, 10), "mm")) + 
+    labs(fill = "Median\nProbability")
   p3 <- bb_plot_heatmap_rowDendro(hm, side = "left") + scale_y_reverse()
   p5 <- bb_plot_heatmap_colData(hm,
                                 vars = c("Response" = "response", "Timepoint" = "timepoint")) &
@@ -76,15 +79,12 @@ BACE
 }
 cellchat_hm <- cellchat_hm_fun(cellchat_sh, experimental_group_palette, hm_pal)
 
-
-
-
-int_name <- c("MIF_CD74_CD44", "ANXA1_FPR1")
-
-sources <- c("CD8 TEM", "CD8 TEM")
-targets <- c("CD14 Mono", "CD14 Mono")
-titles <- c("MIF-CD74/CD44:  CD8 TEM \u2192 CD14 Mono",
-            "ANXA1-FPR1:  CD8 TEM \u2192 CD14 Mono")
+int_name <- c("MIF_CD74_CD44", "ANXA1_FPR1", "LGALS9_CD45")
+sources <- c("CD8 TEM", "CD8 TEM", "CD14 Mono")
+targets <- c("CD14 Mono", "CD14 Mono", "CD8 TEM")
+titles <- c("MIF-CD74/CD44\nCD8 TEM \u2192 CD14 Mono",
+            "ANXA1-FPR1\nCD8 TEM \u2192 CD14 Mono",
+            "LGALS9-CD45\nCD14 Mono \u2192 CD8 TEM")
 
 cellchat_validation_plots <- pmap(.l = list(
   int = int_name,
@@ -93,17 +93,23 @@ cellchat_validation_plots <- pmap(.l = list(
   tit = titles
 ),
 .f = \(int, src, tgt, tit, dat = cellchat_val_dat) {
-  dat |>
+  dat <- dat |>
     filter(interaction_name == int,
            source == src,
-           target == tgt)  |>
-    ggplot(aes(
+           target == tgt)
+  padj_dat <- dat |> 
+    group_by(timepoint_merged_1, interaction_name) |> 
+    rstatix::t_test(prob ~ patient_type3, alternative = "g", detailed = TRUE) |> 
+    mutate(padj_BH = p.adjust(p, method = "hommel"))
+  
+  plot <- ggplot(dat, aes(
       x = patient_type3,
       y = prob,
       color = patient_type3,
       fill = patient_type3
     )) +
     geom_jitter(shape = jitter_shape, size = jitter_size, stroke = jitter_stroke, width = jitter_width) +
+    # geom_text_repel(aes(label = specimen), min.segment.length = 0) +
     facet_wrap( ~ timepoint_merged_1) +
     scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
     scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
@@ -119,13 +125,18 @@ cellchat_validation_plots <- pmap(.l = list(
       geom = summarybox_geom,
       show.legend = FALSE
     ) +
-    stat_compare_means(
-      method = "wilcox",
-      label = "p.signif",
-      label.x.npc = "center",
-      label.y.npc = 0.9,
-      show.legend = FALSE
-    ) +
+    stat_stars_facet(
+    aes(time_panel = timepoint_merged_1),             # <— key line
+    stat_df = padj_dat,
+    time_col = "timepoint_merged_1", 
+    p_col = "padj_BH",
+    cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+    symbols   = c("****", "***", "**", "*", "ns"),
+    size  = 4, 
+    vjust = 0,
+    npc_x = 0.5,
+    npc_y = 0.95
+  ) +
     scale_y_continuous(expand = expansion(mult = c(0.1))) +
     labs(
       y = "Probability",
@@ -140,7 +151,17 @@ cellchat_validation_plots <- pmap(.l = list(
     theme(legend.position = "top",
           legend.justification = "center") +
     theme(plot.title = element_text(hjust = 0.5)) +
+    scale_y_continuous(expand = expansion(mult = c(0.1))) +
     guides(fill = guide_legend(ncol = 2, override.aes = list(size = 2))) 
   
-})
-
+  return(list(plot = plot, padj_dat = padj_dat))
+  
+}) |> set_names(int_name)
+cellchat_validation_plots$MIF_CD74_CD44$padj_dat
+# cellchat_validation_plots$ANXA1_FPR1$padj_dat
+# cellchat_validation_plots$LGALS9_CD45$padj_dat
+# 
+# cellchat_validation_plots$MIF_CD74_CD44$plot
+# cellchat_validation_plots$ANXA1_FPR1$plot
+# cellchat_validation_plots$LGALS9_CD45$plot
+# 

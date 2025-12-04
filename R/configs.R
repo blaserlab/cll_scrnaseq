@@ -7,7 +7,7 @@ conflict_prefer("select", "dplyr")
 conflict_prefer("rename", "dplyr")
 conflict_prefer("count", "dplyr")
 conflict_prefer("as.data.frame", "base")
-
+conflicts_prefer(lmerTest::lmer)
 
 # analysis configurations -------------------------------------------------
 # use this section to set graphical themes, color palettes, etc.
@@ -91,3 +91,5 @@ paper_tables <- fs::path("~/network/X/Labs/Blaser/share/collaborators/cll_scrnas
 colData(cds_main)$leiden_comparison_renamed <- recode(colData(cds_main)$leiden_comparison_renamed, "Acivated BCR" = "Activated BCR")
 colData(cds_main)$patient_type3 <- case_match(colData(cds_main)$patient_type2, "sensitive" ~ "IBS", "resistant" ~ "IBR")
 colData(cds_main)$leiden_enrichment1 <- case_match(colData(cds_main)$leiden_enrichment, "sensitive" ~ "IBS", "resistant" ~ "IBR", .default = colData(cds_main)$leiden_enrichment)
+
+source("R/helpers.R")

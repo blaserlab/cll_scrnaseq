@@ -3,25 +3,34 @@ cluster_proportion_cd14_data <- bb_cellmeta(cds_main) %>%
   filter(seurat_l2_leiden_consensus == "CD14 Mono") |> 
   count(patient, sample, cd14_louvain_da_response, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = cd14_louvain_da_response, values_from = n, values_fill = 0) %>%
-  mutate(pct = sensitive/(unenriched + resistant + sensitive)*100) |> 
-  mutate(cluster = "CD14 Mono")
-
+  mutate(percent = sensitive/(unenriched + resistant + sensitive)*100) |> 
+  mutate(cluster = "CD14 Mono") |> 
+  select(cluster, patient, patient_type3, time = timepoint_merged_1, percent)
 
 
 cluster_proportion_cd16_data <- bb_cellmeta(cds_main) %>%
   filter(seurat_l2_leiden_consensus == "CD16 Mono") |> 
   count(patient, sample, cd16_da_response, patient_type3, timepoint_merged_1) |> 
   pivot_wider(names_from = cd16_da_response, values_from = n, values_fill = 0) %>%
-  mutate(pct = sensitive/(unenriched + resistant + sensitive)*100) |> 
-  mutate(cluster = "CD16 Mono")
+  mutate(percent = sensitive/(unenriched + resistant + sensitive)*100) |> 
+  mutate(cluster = "CD16 Mono") |> 
+  select(cluster, patient, patient_type3, time = timepoint_merged_1, percent)
   
 cluster_proportion_mono_data <- bind_rows(cluster_proportion_cd14_data, cluster_proportion_cd16_data)
-  
+
+padj_data <- cluster_proportion_mono_data |> 
+  group_by(cluster, time) |> 
+  rstatix::t_test(percent ~ patient_type3, p.adjust.method = "none", var.equal = FALSE) |> 
+  group_by(cluster) |> 
+  mutate(padj_BH = p.adjust(p, method = "BH"))
+
+
+
 cluster_proportion_plot_mono <-
   ggplot(cluster_proportion_mono_data, 
          mapping = aes(
     x = patient_type3,
-    y = pct,
+    y = percent,
     color = patient_type3,
     fill = patient_type3
   )) +
@@ -29,7 +38,7 @@ cluster_proportion_plot_mono <-
               size = jitter_size,
               width = jitter_width,
               stroke = jitter_stroke) +
-  facet_grid(cluster ~ timepoint_merged_1, scales = "free", axes = "all_x") +
+  facet_grid(cluster ~ time, scales = "free", axes = "all_x") +
   scale_fill_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_fill)) +
   scale_color_manual(values = alpha(colour = experimental_group_palette, alpha = jitter_alpha_color)) +
   theme(strip.background = element_blank()) +
@@ -44,13 +53,19 @@ cluster_proportion_plot_mono <-
     geom = summarybox_geom,
     show.legend = FALSE
   ) +
-  stat_compare_means(
-    method = "t.test",
-    label = "p.signif",
-    label.x.npc = "center",
-    label.y.npc = 0.9,
-    show.legend = FALSE
-  ) +
+   stat_stars_grid(
+    aes(panel_time = time, panel_cluster = cluster),             # <— key line
+    stat_df = padj_data,
+    time_col = "time", 
+    cluster_col = "cluster",
+    p_col = "padj_BH",
+    cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+    symbols   = c("****", "***", "**", "*", "ns"),
+    size  = 4, 
+    vjust = 0,
+    npc_x = 0.5,
+    npc_y = 0.95
+  ) + 
   scale_y_continuous(expand = expansion(mult = c(0.1))) +
   labs(y = "Percent IBS-enriched",
        color = NULL,

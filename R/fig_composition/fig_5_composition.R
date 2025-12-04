@@ -1,38 +1,34 @@
-# source("R/dependencies.R")
-# source("R/configs.R")
 
-source_all_figs <- TRUE
-# source_all_figs <- FALSE
-
-if (source_all_figs) {
-  source("R/fig_staging/cellchat_figs.R")
+make_fig_5 <- function(source_all_figs = TRUE) {
+  if (source_all_figs) {
+    source("R/fig_staging/cellchat_figs.R", local = TRUE)
+    source("R/fig_staging/cellchat_flow.R", local = TRUE)
+  }
+  
+  fig_5_left <- plot_grid(cellchat_hm,  labels = c("A"))
+  
+  fig_5_right <- plot_grid(
+    cellchat_validation_plots$MIF_CD74_CD44$plot,
+    cellchat_flow_figs$MIF$plot,
+    cellchat_validation_plots$LGALS9_CD45$plot,
+    cellchat_flow_figs$LGALS$plot,
+    ncol = 1,
+    align = "v", 
+    axis = "l",
+    labels = c("B", "C", "D", "E")
+  )
+  
+  fig_5 <- plot_grid(fig_5_left,
+                     fig_5_right,
+                     ncol = 2,
+                     rel_widths = c(2, 1))
+  
+  save_plot(
+    fig_5,
+    filename = fs::path(network_out, "fig_5.pdf"),
+    base_width = 7.5,
+    base_height = 9.75
+  )
+  
 }
-
-fig_5_top <- plot_grid(
-  cellchat_hm,
-  labels = c("A")
-)
-
-fig_5_bot <- plot_grid(
-  cellchat_validation_plots[[1]],
-  cellchat_validation_plots[[2]],
-  ncol = 2,
-  rel_widths = c(1,1),
-  labels = c("B", "C")
-)
-
-fig_5 <- plot_grid(
-  fig_5_top,
-  fig_5_bot,
-  ncol = 1,
-  rel_heights = c(1,0.4)
-)
-
-save_plot(
-  fig_5,
-  filename = fs::path(network_out, "fig_5.pdf"),
-  base_width = 7.5,
-  base_height = 9.75
-)
-
-
+make_fig_5()

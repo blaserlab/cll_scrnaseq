@@ -19,6 +19,8 @@ suppressPackageStartupMessages(library("pander"))
 suppressPackageStartupMessages(library("Rcpp"))
 suppressPackageStartupMessages(library("ggrastr"))
 suppressPackageStartupMessages(library("patchwork"))
+suppressPackageStartupMessages(library(lmerTest))  # lmer + Satterthwaite/Kenward-Roger p-values
+suppressPackageStartupMessages(library(emmeans))  # estimated marginal means & contrasts
 
 
 blaseRtemplates::project_data(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")

@@ -1,5 +1,4 @@
-
-abs_treg <- bb_cellmeta(cds_main) |>
+abs_treg_data <- bb_cellmeta(cds_main) |>
   filter(partition_assignment  %in% c("T")) |>
   count(patient,
         sample,
@@ -10,13 +9,20 @@ abs_treg <- bb_cellmeta(cds_main) |>
   pivot_wider(names_from = seurat_l2_leiden_consensus,
               values_from = n,
               values_fill = 1) |>
-  # mutate(fraction_treg = Treg / (`CD4 Naive` + `CD4 TCM` + `CD8 TEM` + NK + Treg)) |> 
-  mutate(fraction_treg = Treg / (`CD4 Naive` + `CD4 TCM` + `CD8 TEM` + Treg)) |> 
+  mutate(fraction_treg = Treg / (`CD4 Naive` + `CD4 TCM` + `CD8 TEM` + Treg)) |>
   left_join(clinical_flow_data |> 
-              filter(population == "CD3"),
+              filter(population %in% c("CD3")),
             by = join_by(patient, timepoint_merged_2)) |> 
   mutate(abs_treg = abs_mm3 * fraction_treg) |> 
-  ggplot(aes(x = patient_type3, y = abs_treg, fill = patient_type3, color = patient_type3)) +
+  select(patient, patient_type3, time = timepoint_merged_1, abs_treg)
+
+treg_padj_data <- abs_treg_data |> 
+  group_by(time) |> 
+  rstatix::wilcox_test(abs_treg ~ patient_type3, p.adjust.method = "none") |> 
+  mutate(padj_BH = p.adjust(p, method = "BH"))
+
+abs_treg <-  
+  ggplot(abs_treg_data, aes(x = patient_type3, y = abs_treg, fill = patient_type3, color = patient_type3)) +
   geom_jitter(width = jitter_width,
               size = jitter_size,
               shape = jitter_shape) +
@@ -31,13 +37,20 @@ abs_treg <- bb_cellmeta(cds_main) |>
     geom = summarybox_geom, 
     show.legend = FALSE
   )+
-  stat_compare_means(method = "t.test",
-                     label = "p.signif",
-                     label.x.npc = 0.5,
-                     label.y.npc = 0.9,
-                     show.legend = FALSE) +
+  stat_stars_facet(
+    aes(time_panel = time),             # <— key line
+    stat_df = treg_padj_data,
+    time_col = "time", 
+    p_col = "padj_BH",
+    cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf),
+    symbols   = c("****", "***", "**", "*", "ns"),
+    size  = 4, 
+    vjust = 0,
+    npc_x = 0.5,
+    npc_y = 0.95
+  ) + 
   theme(strip.background = element_blank()) +
-  facet_wrap(~timepoint_merged_1, scales = "free") + 
+  facet_wrap(~time, scales = "free") + 
   labs(y = "Cells/mm<sup>3</sup>", 
        color = NULL, 
        fill = NULL, 

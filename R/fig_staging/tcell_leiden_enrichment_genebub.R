@@ -14,7 +14,7 @@
 #   select(pathway, leadingEdge)
 
 tcell_leiden_enrichment_examplegenes <-
-  c("TOX", "PDCD1", "TBX21", "GZMB", "PRF1", "KLRD1", "LTB", "TIGIT")
+  c("TOX", "PDCD1", "TBX21", "GZMB", "PRF1", "KLRD1", "LTB", "TIGIT", "HAVCR2")
 # tcell_leiden_enrichment_examplegenes %in% tcell_leiden_encrichment_le$leadingEdge
 
 
