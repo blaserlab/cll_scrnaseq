@@ -6,15 +6,19 @@ source_all_figs <- TRUE
 
 if (source_all_figs) {
   source("R/fig_staging/pt_characteristics_hm.R")
+  source("R/fig_staging/cll_flow.R")
     
 }
 
-fig_S2 <- plot_grid(pt_characteristics_hm)
+fig_S2 <- plot_grid(
+  pt_characteristics_hm,
+  plot_grid(cll_flow_fig, NULL, ncol = 2, labels = c("B", "")),
+  ncol = 1,
+  rel_heights = c(2,1), labels = c("A", ""))
 
 save_plot(
  plot = fig_S2,
- # filename = "fig_s2.png",
  filename = fs::path(network_out, "fig_S2.pdf"),
- base_height = 7.5,
- base_width = 9.75
+ base_width = 7.5,
+ base_height = 9.75
 )

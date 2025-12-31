@@ -23,5 +23,5 @@ suppressPackageStartupMessages(library(lmerTest))  # lmer + Satterthwaite/Kenwar
 suppressPackageStartupMessages(library(emmeans))  # estimated marginal means & contrasts
 
 
-blaseRtemplates::project_data(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
+project_data(path = "~/network/X/Labs/Blaser/share/collaborators/cll_scrnaseq_manuscript/datapkg")
 
